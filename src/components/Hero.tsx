@@ -10,7 +10,7 @@ export default function Hero() {
       <div className="md:w-1/2 text-center md:text-left space-y-6">
         <h1 className="text-4xl md:text-5xl font-bold leading-tight">
           Haus!{" "}
-          <span className="block text-primary">
+          <span className="block">
             Semua Orang Berhak Minum Enak
           </span>
         </h1>
@@ -20,7 +20,7 @@ export default function Hero() {
         </p>
         <a
           href="#menu"
-          className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+          className="inline-block bg-primary text-white font-semibold px-6 py-3 rounded-lg transition"
         >
           Beli Sekarang
         </a>

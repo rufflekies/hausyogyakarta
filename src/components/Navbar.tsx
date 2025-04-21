@@ -17,7 +17,7 @@ const Navbar = () => {
         {/* Logo kiri */}
         <div className="flex items-center">
           <Image src="/logo.png" alt="Haus Logo" width={40} height={40} />
-          <span className="ml-2 text-xl font-bold">Haus Yogyakarta</span>
+          <span className="mt-2 text-xl font-bold">haus!</span>
         </div>
 
         {/* Menu kanan */}
@@ -35,22 +35,22 @@ const Navbar = () => {
 
           <ul className="flex space-x-6">
             <li>
-              <Link href="/" className="hover:underline">
+              <Link href="/home" className="font-semibold hover:underline">
                 Beranda
               </Link>
             </li>
             <li>
-              <Link href="/about" className="hover:underline">
+              <Link href="/about" className="font-semibold hover:underline">
                 Tentang
               </Link>
             </li>
             <li>
-              <Link href="/menu" className="hover:underline">
+              <Link href="/menu" className="font-semibold hover:underline">
                 Menu
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="hover:underline">
+              <Link href="/contact" className="font-semibold hover:underline">
                 Kontak
               </Link>
             </li>
