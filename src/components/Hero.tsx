@@ -4,7 +4,7 @@ export default function Hero() {
   return (
     <section
       id="beranda"
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[80vh] flex flex-col md:flex-row items-center justify-between py-12"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between py-12"
     >
       {/* Kiri - Text */}
       <div className="md:w-1/2 text-center md:text-left space-y-6">

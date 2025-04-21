@@ -1,14 +1,13 @@
 "use client";
 import { Instagram } from "lucide-react";
 
-
 export default function About() {
   return (
     <section
       id="tentang"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
     >
-      <div className="flex flex-col-reverse md:flex-row items-center gap-12">
+      <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-12">
         {/* Kiri - Gambar */}
         <div className="md:w-1/2 flex justify-center">
           <img
@@ -19,15 +18,15 @@ export default function About() {
         </div>
 
         {/* Kanan - Teks */}
-        <div className="md:w-1/2 space-y-4 text-center md:text-left">
-          <span className="uppercase text-sm tracking-widest text-primary font-semibold">
+        <div className="md:w-1/2 space-y-6 text-center md:text-left">
+          <span className="uppercase text-base tracking-widest text-primary font-semibold">
             Tentang Kami
           </span>
-          <h2 className="text-3xl font-bold leading-snug">
-            Kami Menyediakan Berbagai <br className="hidden md:block" /> Varian
-            Menu Terbaru
+          <h2 className="mt-2 text-3xl md:text-4xl font-bold leading-tight">
+            Kami Menyediakan Berbagai{" "}
+            <span className="block">Varian Menu Terbaru</span>
           </h2>
-          <p className="text-gray-600">
+          <p className="text-lg text-gray-600">
             Haus merupakan salah satu franchise minuman manis menyegarkan
             favorit banyak orang. Selain rasanya yang enak, Haus dibanderol
             dengan harga terjangkau sehingga siapa saja bisa mencicipinya.
@@ -36,9 +35,9 @@ export default function About() {
             href="https://www.instagram.com/haus.indonesia/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
+            className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
           >
-            <Instagram className="w-6 h-6" />
+            <Instagram className="w-8 h-8" />
           </a>
         </div>
       </div>
