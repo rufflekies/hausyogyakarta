@@ -125,6 +125,24 @@ const Navbar = () => {
                   </div>
                   <form className="space-y-5">
                     <div className="space-y-4">
+                      {authMode === "signup" && (
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor={`${id}-username`}
+                            className={isDarkMode ? "text-white" : "text-black"}
+                          >
+                            Username
+                          </Label>
+                          <Input
+                            id={`${id}-username`}
+                            placeholder="Enter your username"
+                            type="text"
+                            required
+                            className="text-muted-foreground"
+                          />
+                        </div>
+                      )}
+
                       <div className="space-y-2">
                         <Label
                           htmlFor={`${id}-email`}
@@ -137,9 +155,10 @@ const Navbar = () => {
                           placeholder="hi@example.com"
                           type="email"
                           required
-                          className="text-muted-foreground" // Menambahkan kelas untuk warna teks abu-abu
+                          className="text-muted-foreground"
                         />
                       </div>
+
                       <div className="space-y-2">
                         <Label
                           htmlFor={`${id}-password`}
@@ -152,9 +171,10 @@ const Navbar = () => {
                           placeholder="Enter your password"
                           type="password"
                           required
-                          className={`text-muted-foreground`} // Menambahkan kelas untuk warna teks abu-abu
+                          className="text-muted-foreground"
                         />
                       </div>
+
                       {authMode === "signup" && (
                         <div className="space-y-2">
                           <Label
@@ -173,28 +193,6 @@ const Navbar = () => {
                         </div>
                       )}
                     </div>
-
-                    {authMode === "signin" && (
-<div className="flex justify-between gap-2">
-  <div className="flex items-center gap-2">
-    <Checkbox id={`${id}-remember`} className="accent-white" />
-    <Label
-      htmlFor={`${id}-remember`}
-      className={`font-normal ${isDarkMode ? "text-white" : "text-black"}`}
-    >
-      Remember me
-    </Label>
-</div>
-                        <a
-                          className={`text-sm underline hover:no-underline ${
-                            isDarkMode ? "text-white" : "text-black"
-                          }`}
-                          href="#"
-                        >
-                          Forgot password?
-                        </a>
-                      </div>
-                    )}
 
                     <Button type="submit" className="text-white w-full">
                       {authMode === "signin" ? "Sign in" : "Sign up"}
