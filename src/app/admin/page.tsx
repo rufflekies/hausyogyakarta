@@ -146,7 +146,7 @@ export default function Dashboard() {
           </div>
 
           {/* Data Pesanan Table */}
-          <div className="bg-white text-black rounded-lg p-4">
+          <div className="bg-white text-black pb-6 rounded-lg p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium">Data Pesanan Terbaru</h2>
               <Link
@@ -199,10 +199,6 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-      </div>
-      {/* Note about charts */}
-      <div className="mt-6 bg-white text-black rounded-lg p-4">
-        <p className="text-gray-700">*nek bisa, iki grafik pesanan</p>
       </div>
     </>
   );
