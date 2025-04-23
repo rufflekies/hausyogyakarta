@@ -2,9 +2,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google"; // Import Poppins font dari Google Fonts
 import "./globals.css";
-
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import type React from "react";
 
@@ -28,10 +25,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={poppins.className}>
       <body>
-        <ThemeProvider defaultTheme="light">
-          <Navbar />
+        <ThemeProvider defaultTheme="system">
           <main className="flex-1">{children}</main>
-          <Footer />
         </ThemeProvider>
       </body>
     </html>
