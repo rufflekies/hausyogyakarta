@@ -47,15 +47,15 @@ export default function Dashboard() {
       <NavbarAdmin title="Dashboard" />{" "}
       {/* Panggil NavbarAdmin dan beri title */}
       {/* Main Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Left Column */}
-        <div className="col-span-2 space-y-4">
+        <div className="col-span-2 space-y-6">
           {/* Total Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {/* Card 1 */}
-            <div className="bg-white text-black rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <div className="bg-white shadow-lg text-black rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   {/* Icon */}
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <circle
@@ -69,14 +69,14 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-sm text-gray-700 mb-1">Total Produk</h3>
+              <h3 className="text-sm text-gray-700 mb-2">Total Produk</h3>
               <p className="text-3xl font-bold">500</p>
             </div>
 
             {/* Card 2 */}
-            <div className="bg-white text-black rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="bg-white shadow-lg text-black rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                   {/* Icon */}
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <rect
@@ -115,14 +115,14 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-sm text-gray-700 mb-1">Total Pesanan</h3>
+              <h3 className="text-sm text-gray-700 mb-2">Total Pesanan</h3>
               <p className="text-3xl font-bold">500</p>
             </div>
 
             {/* Card 3 */}
-            <div className="bg-white text-black rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="bg-white shadow-lg text-black rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                   {/* Icon */}
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <circle
@@ -140,13 +140,13 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-sm text-gray-700 mb-1">Total Pelanggan</h3>
+              <h3 className="text-sm text-gray-700 mb-2">Total Pelanggan</h3>
               <p className="text-3xl font-bold">500</p>
             </div>
           </div>
 
           {/* Data Pesanan Table */}
-          <div className="bg-white text-black pb-6 rounded-lg p-4">
+          <div className="bg-white shadow-lg text-black pb-6 rounded-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium">Data Pesanan Terbaru</h2>
               <Link
@@ -158,7 +158,7 @@ export default function Dashboard() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-auto">
                 <thead>
                   <tr className="bg-blue-900 text-white">
                     <th className="py-2 px-4 text-left rounded-l-lg">ID</th>
@@ -189,7 +189,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column - Grafik Section */}
-        <div className="bg-white text-black rounded-lg p-4">
+        <div className="bg-white shadow-lg text-black rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4">Grafik Pesanan</h2>
           {/* Tempatkan grafik atau komponen chart di sini */}
           <div className="bg-gray-200 w-full h-64 rounded-lg">

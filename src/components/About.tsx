@@ -26,7 +26,7 @@ export default function About() {
             Kami Menyediakan Berbagai{" "}
             <span className="block">Varian Menu Terbaru</span>
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg">
             Haus merupakan salah satu franchise minuman manis menyegarkan
             favorit banyak orang. Selain rasanya yang enak, Haus dibanderol
             dengan harga terjangkau sehingga siapa saja bisa mencicipinya.

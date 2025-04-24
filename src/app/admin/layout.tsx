@@ -1,5 +1,4 @@
 "use client";
-import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
 
 interface AdminLayoutProps {
@@ -11,9 +10,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen">
-      <ThemeProvider>
-        <main className="flex-1 px-8 max-w-screen mx-auto">{children}</main>
-      </ThemeProvider>
+      <main className="flex-1 px-8 max-w-screen mx-auto">{children}</main>
     </div>
   );
 }

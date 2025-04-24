@@ -1,7 +1,23 @@
-// app/admin/pesanan/page.tsx
 "use client";
+
 import NavbarAdmin from "@/components/NavbarAdmin";
 import { useState } from "react";
+import { ChevronDown, CircleUserRoundIcon, TrashIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function PelangganContent() {
   const [search, setSearch] = useState("");
@@ -21,11 +37,24 @@ export default function PelangganContent() {
     },
   ];
 
+  const handleDetail = (id: string) => {
+    alert(`Lihat detail pelanggan ID: ${id}`);
+  };
+
+  const handleDelete = (id: string) => {
+    const konfirmasi = confirm("Yakin ingin menghapus pelanggan ini?");
+    if (konfirmasi) {
+      alert(`Hapus pelanggan ID: ${id}`);
+    }
+  };
+
   const filteredData = pelangganData.filter(
     (pelanggan) =>
       pelanggan.nama.toLowerCase().includes(search.toLowerCase()) ||
       pelanggan.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const [openDialog, setOpenDialog] = useState(false);
 
   return (
     <>
@@ -45,9 +74,82 @@ export default function PelangganContent() {
             Cari
           </button>
         </div>
-        <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-          + Tambah
-        </button>
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogTrigger asChild>
+            <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+              + Tambah
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-sm bg-white">
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-center">
+                <DialogTitle asChild>
+                  <h2 className="text-lg font-bold text-black">
+                    Tambah Pelanggan
+                  </h2>
+                </DialogTitle>
+                <p className="text-sm text-gray-700">
+                  Masukkan detail pelanggan baru.
+                </p>
+              </div>
+            </div>
+            <form
+              className="space-y-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+                const nama = formData.get("nama") as string;
+                const email = formData.get("email") as string;
+                const password = formData.get("password") as string;
+                alert(
+                  `Tambah Pelanggan:\nNama: ${nama}\nEmail: ${email}\nPassword: ${password}`
+                );
+                setOpenDialog(false);
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="nama" className="text-black">
+                  Nama
+                </Label>
+                <Input
+                  id="nama"
+                  name="nama"
+                  placeholder="Masukkan Nama"
+                  type="text"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-black">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  placeholder="Masukkan Email"
+                  type="email"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-black">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  placeholder="Masukkan Password"
+                  type="password"
+                  required
+                />
+              </div>
+              <Button type="submit" className="text-white w-full mt-4">
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Data Table Section */}
@@ -85,10 +187,29 @@ export default function PelangganContent() {
                     </span>
                   </td>
                   <td className="p-3">
-                    <div className="flex gap-2">
-                      <button className="p-1 hover:text-blue-600">📝</button>
-                      <button className="p-1 hover:text-red-600">🗑️</button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button className="bg-white border border-gray-300 text-black hover:bg-gray-100">
+                          Aksi <ChevronDown size={16} className="ml-2" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-white w-40">
+                        <DropdownMenuItem
+                          className="text-black hover:bg-gray-100"
+                          onClick={() => handleDetail(item.id)}
+                        >
+                          <CircleUserRoundIcon size={16} className="mr-2" />
+                          Lihat Detail
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-600 hover:bg-red-100"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <TrashIcon size={16} className="mr-2" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}
