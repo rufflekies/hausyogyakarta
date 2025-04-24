@@ -98,7 +98,11 @@ const Navbar = () => {
                     <FaUserCircle className="w-6 h-6" />
                   </button>
                 </DialogTrigger>
-                <DialogContent className="max-w-sm">
+                <DialogContent
+                  className={`max-w-md ${
+                    isDarkMode ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
                   <div className="flex flex-col items-center gap-2">
                     <div className="flex size-11 shrink-0 items-center justify-center rounded-full">
                       <Image
@@ -124,7 +128,6 @@ const Navbar = () => {
                       </p>
                     </div>
                   </div>
-
                   <form className="space-y-5">
                     <div className="space-y-4">
                       {authMode === "signup" && (
@@ -134,6 +137,7 @@ const Navbar = () => {
                             id={`${id}-username`}
                             placeholder="Enter your username"
                             required
+                            className="text-muted-foreground"
                           />
                         </div>
                       )}
@@ -144,6 +148,7 @@ const Navbar = () => {
                           type="email"
                           placeholder="hi@example.com"
                           required
+                          className="text-muted-foreground"
                         />
                       </div>
                       <div className="space-y-2">
@@ -153,6 +158,7 @@ const Navbar = () => {
                           type="password"
                           placeholder="Enter your password"
                           required
+                          className="text-muted-foreground"
                         />
                       </div>
                       {authMode === "signup" && (
@@ -165,20 +171,16 @@ const Navbar = () => {
                             type="password"
                             placeholder="Re-type your password"
                             required
+                            className="text-muted-foreground"
                           />
                         </div>
                       )}
                     </div>
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" className="text-white w-full">
                       {" "}
                       {authMode === "signin" ? "Sign in" : "Sign up"}{" "}
                     </Button>
                   </form>
-
-                  <div className="flex items-center gap-3 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-                    <span className="text-xs text-muted-foreground">Or</span>
-                  </div>
-
                   <p className="text-sm text-center mt-4">
                     {authMode === "signin" ? (
                       <>

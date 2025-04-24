@@ -89,7 +89,7 @@ export default function ProdukContent() {
                 + Tambah
               </button>
             </DialogTrigger>
-            <DialogContent className="max-w-sm bg-white">
+            <DialogContent className="max-w-md bg-white">
               <div className="flex flex-col items-center gap-2">
                 <div className="text-center">
                   <DialogTitle asChild>

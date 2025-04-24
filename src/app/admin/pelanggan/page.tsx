@@ -80,7 +80,7 @@ export default function PelangganContent() {
               + Tambah
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-sm bg-white">
+          <DialogContent className="max-w-md bg-white">
             <div className="flex flex-col items-center gap-2">
               <div className="text-center">
                 <DialogTitle asChild>
@@ -118,6 +118,7 @@ export default function PelangganContent() {
                   placeholder="Masukkan Nama"
                   type="text"
                   required
+                  className="text-muted-foreground"
                 />
               </div>
               <div className="space-y-2">
@@ -130,6 +131,7 @@ export default function PelangganContent() {
                   placeholder="Masukkan Email"
                   type="email"
                   required
+                  className="text-muted-foreground"
                 />
               </div>
               <div className="space-y-2">
@@ -142,6 +144,7 @@ export default function PelangganContent() {
                   placeholder="Masukkan Password"
                   type="password"
                   required
+                  className="text-muted-foreground"
                 />
               </div>
               <Button type="submit" className="text-white w-full mt-4">
