@@ -69,7 +69,9 @@ export default function Contact() {
             <Mail className="h-8 w-8" />
           </div>
           <h3 className="text-lg font-semibold mb-2">mail@haus.com</h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className={`mb-4 text-sm ${
+             isDarkMode ? "text-white" : "text-gray-800"
+          }`}>
             Jika Anda memiliki pertanyaan atau membutuhkan bantuan lebih lanjut,
             Anda dapat menghubungi kami melalui email di alamat di atas.
           </p>

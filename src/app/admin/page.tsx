@@ -1,8 +1,10 @@
 // app/admin/page.tsx
-import Link from "next/link";
-import NavbarAdmin from "@/components/NavbarAdmin"; // Import NavbarAdmin
+"use client";
 
-// Data pesanan
+import Link from "next/link";
+import { useTheme } from "next-themes";
+import NavbarAdmin from "@/components/NavbarAdmin";
+
 const ordersData = [
   {
     id: "0001",
@@ -42,50 +44,70 @@ const ordersData = [
 ];
 
 export default function Dashboard() {
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
   return (
     <>
-      <NavbarAdmin title="Dashboard" />{" "}
-      {/* Panggil NavbarAdmin dan beri title */}
-      {/* Main Section */}
+      <NavbarAdmin title="Dashboard" />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Left Column */}
         <div className="col-span-2 space-y-6">
           {/* Total Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {/* Card 1 */}
-            <div className="bg-white shadow-lg text-black rounded-lg p-6">
+            <div
+              className={`shadow-lg rounded-lg p-6 ${
+                isDarkMode ? "bg-neutral-900 text-white" : "bg-white text-black"
+              }`}
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                  {/* Icon */}
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <circle
                       cx="12"
                       cy="12"
                       r="10"
-                      stroke="red"
+                      stroke="white"
                       strokeWidth="2"
                     />
-                    <circle cx="12" cy="12" r="2" fill="red" />
+                    <circle cx="12" cy="12" r="2" fill="white" />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-sm text-gray-700 mb-2">Total Produk</h3>
+              <h3
+                className={`text-sm mb-2 ${
+                  isDarkMode ? "text-gray-300" : "text-gray-500"
+                }`}
+              >
+                Total Produk
+              </h3>
               <p className="text-3xl font-bold">500</p>
             </div>
 
             {/* Card 2 */}
-            <div className="bg-white shadow-lg text-black rounded-lg p-6">
+            <div
+              className={`shadow-lg rounded-lg p-6 ${
+                isDarkMode ? "bg-neutral-900 text-white" : "bg-white text-black"
+              }`}
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  {/* Icon */}
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                  <svg
+                    className="stroke-primary"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
                     <rect
                       x="4"
                       y="4"
                       width="16"
                       height="16"
                       rx="2"
-                      stroke="blue"
+                      stroke="white"
                       strokeWidth="2"
                     />
                     <line
@@ -93,7 +115,7 @@ export default function Dashboard() {
                       y1="9"
                       x2="16"
                       y2="9"
-                      stroke="blue"
+                      stroke="white"
                       strokeWidth="2"
                     />
                     <line
@@ -101,7 +123,7 @@ export default function Dashboard() {
                       y1="13"
                       x2="16"
                       y2="13"
-                      stroke="blue"
+                      stroke="white"
                       strokeWidth="2"
                     />
                     <line
@@ -109,49 +131,68 @@ export default function Dashboard() {
                       y1="17"
                       x2="12"
                       y2="17"
-                      stroke="blue"
+                      stroke="white"
                       strokeWidth="2"
                     />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-sm text-gray-700 mb-2">Total Pesanan</h3>
+              <h3
+                className={`text-sm mb-2 ${
+                  isDarkMode ? "text-gray-300" : "text-gray-500"
+                }`}
+              >
+                Total Pesanan
+              </h3>
               <p className="text-3xl font-bold">500</p>
             </div>
 
             {/* Card 3 */}
-            <div className="bg-white shadow-lg text-black rounded-lg p-6">
+            <div
+              className={`shadow-lg rounded-lg p-6 ${
+                isDarkMode ? "bg-neutral-900 text-white" : "bg-white text-black"
+              }`}
+            >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  {/* Icon */}
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <circle
                       cx="12"
                       cy="8"
                       r="4"
-                      stroke="blue"
+                      stroke="white"
                       strokeWidth="2"
                     />
                     <path
                       d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
-                      stroke="blue"
+                      stroke="white"
                       strokeWidth="2"
                     />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-sm text-gray-700 mb-2">Total Pelanggan</h3>
+              <h3
+                className={`text-sm mb-2 ${
+                  isDarkMode ? "text-gray-300" : "text-gray-500"
+                }`}
+              >
+                Total Pelanggan
+              </h3>
               <p className="text-3xl font-bold">500</p>
             </div>
           </div>
 
           {/* Data Pesanan Table */}
-          <div className="bg-white shadow-lg text-black pb-6 rounded-lg p-6">
+          <div
+            className={`shadow-lg pb-6 rounded-lg p-6 ${
+              isDarkMode ? "bg-neutral-900 text-white" : "bg-white text-black"
+            }`}
+          >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium">Data Pesanan Terbaru</h2>
               <Link
                 href="/admin/pesanan"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
               >
                 Lihat Semua
               </Link>
@@ -160,7 +201,7 @@ export default function Dashboard() {
             <div className="overflow-x-auto">
               <table className="w-full table-auto">
                 <thead>
-                  <tr className="bg-blue-900 text-white">
+                  <tr className="bg-primary text-white">
                     <th className="py-2 px-4 text-left rounded-l-lg">ID</th>
                     <th className="py-2 px-4 text-left">Nama</th>
                     <th className="py-2 px-4 text-left">Tanggal</th>
@@ -189,12 +230,14 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column - Grafik Section */}
-        <div className="bg-white shadow-lg text-black rounded-lg p-6">
+        <div
+          className={`shadow-lg rounded-lg p-6 ${
+            isDarkMode ? "bg-neutral-900 text-white" : "bg-white text-black"
+          }`}
+        >
           <h2 className="text-lg font-medium mb-4">Grafik Pesanan</h2>
-          {/* Tempatkan grafik atau komponen chart di sini */}
-          <div className="bg-gray-200 w-full h-64 rounded-lg">
-            {/* Grafik Placeholder */}
-            <p className="text-center py-24 text-gray-500">
+          <div className="bg-gray-200 dark:bg-gray-700 w-full h-64 rounded-lg">
+            <p className="text-center py-24 text-gray-500 dark:text-gray-300">
               Grafik akan ditampilkan di sini
             </p>
           </div>

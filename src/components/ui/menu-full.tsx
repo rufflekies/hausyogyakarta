@@ -386,7 +386,7 @@ const MenuFull = () => {
                 className={`w-full p-2 border rounded-md ${
                   isDarkMode
                     ? "bg-black text-white border-white"
-                    : "bg-white text-black border-gray-300"
+                    : "bg-white text-black border-black"
                 }`}
                 required
               >

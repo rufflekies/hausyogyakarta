@@ -1,20 +1,24 @@
 "use client";
 import NavbarAdmin from "@/components/NavbarAdmin";
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 
 export default function PesananContent() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [searchTerm, setSearchTerm] = useState("");
-  const router = useRouter();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+  const inputId = useId();
 
   const [orders, setOrders] = useState([
     {
@@ -75,92 +79,114 @@ export default function PesananContent() {
     <>
       <NavbarAdmin title="Pesanan" />
 
-      {/* Tabs Section */}
-      <div className="flex justify-between items-center mb-4 gap-2 flex-wrap">
-        <div className="flex gap-2">
+      {/* Filter & Search */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex gap-2 flex-wrap">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab}
-              className={`px-4 py-2 rounded-md font-medium transition ${
-                activeTab === tab
-                  ? "bg-red-500 text-white"
-                  : "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-zinc-800 dark:text-red-300 dark:hover:bg-zinc-700"
-              }`}
+              variant={activeTab === tab ? "default" : "outline"}
               onClick={() => setActiveTab(tab)}
+              className={`text-sm ${
+                activeTab === tab
+                  ? "bg-primary text-white"
+                  : isDarkMode
+                  ? "bg-zinc-900 text-primary hover:bg-zinc-800"
+                  : "bg-white text-gray-600 hover:bg-gray-100"
+              }`}
             >
               {tab}
-            </button>
+            </Button>
           ))}
         </div>
-        <div className="flex">
-          <input
-            type="text"
+
+        <div className="relative flex w-full max-w-xs">
+          <Input
+            id={inputId}
             placeholder="Cari nama..."
+            type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring focus:border-blue-400"
+            className={`ps-9 ${
+              isDarkMode ? "bg-black text-white" : "bg-white text-black"
+            }`}
           />
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700">
-            Cari
-          </button>
+          <div className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground pointer-events-none">
+            <Search size={16} />
+          </div>
         </div>
       </div>
 
-      {/* Data Table Section */}
-      <div className="bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg p-4 shadow">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-blue-900 text-white">
-                <th className="p-3 text-left rounded-l-lg">ID</th>
-                <th className="p-3 text-left">Nama</th>
-                <th className="p-3 text-left">Total</th>
-                <th className="p-3 text-left">Tanggal</th>
-                <th className="p-3 text-left rounded-r-lg">Status</th>
+      {/* Tabel Pesanan */}
+      <div
+        className={`rounded-lg p-4 shadow overflow-x-auto ${
+          isDarkMode ? "bg-black text-white" : "bg-white text-black"
+        }`}
+      >
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-primary text-white">
+              <th className="p-3 text-left rounded-l-lg">ID</th>
+              <th className="p-3 text-left">Nama</th>
+              <th className="p-3 text-left">Total</th>
+              <th className="p-3 text-left">Tanggal</th>
+              <th className="p-3 text-left rounded-r-lg">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredOrders.map((order) => (
+              <tr
+                key={order.id}
+                className="border-b border-gray-200 dark:border-zinc-700 transition"
+              >
+                <td className="p-3">{order.id}</td>
+                <td className="p-3">{order.nama}</td>
+                <td className="p-3">{order.total}</td>
+                <td className="p-3">{order.tanggal}</td>
+                <td className="p-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        className={`border border-black text-black ${
+                          isDarkMode
+                            ? "bg-black text-white hover:bg-gray-700 border-black"
+                            : "bg-white text-black hover:bg-gray-100 border-white"
+                        }`}
+                      >
+                        {order.status}
+                        <ChevronDown size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className={`w-40 ${isDarkMode ? "bg-black" : "bg-white"}`}
+                    >
+                      {["Proses", "Selesai", "Dibatalkan"].map((status) => (
+                        <DropdownMenuItem
+                          key={status}
+                          onClick={() => handleStatusChange(order.id, status)}
+                          className={`${
+                            isDarkMode
+                              ? "text-white hover:bg-zinc-700"
+                              : "text-black hover:bg-gray-100"
+                          }`}
+                        >
+                          {status}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-b border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
-                >
-                  <td className="p-3">{order.id}</td>
-                  <td className="p-3">{order.nama}</td>
-                  <td className="p-3">{order.total}</td>
-                  <td className="p-3">{order.tanggal}</td>
-                  <td className="p-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button className="bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700">
-                          {order.status} <ChevronDown size={16} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-white dark:bg-zinc-900 w-40">
-                        {["Proses", "Selesai", "Dibatalkan"].map((status) => (
-                          <DropdownMenuItem
-                            key={status}
-                            onClick={() => handleStatusChange(order.id, status)}
-                            className="text-black dark:text-white hover:bg-red-100 dark:hover:bg-zinc-700"
-                          >
-                            {status}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))}
-              {filteredOrders.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="text-center py-4">
-                    Tidak ada data ditemukan.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {filteredOrders.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-4">
+                  Tidak ada data ditemukan.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </>
   );
