@@ -1,6 +1,6 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
   async headers() {
     return [
       {
@@ -30,10 +30,10 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://103.210.35.189:8111/api/:path*',
+        destination: 'http://103.210.35.189:8111/api/:path*', // Gunakan http, bukan https
       },
     ];
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
