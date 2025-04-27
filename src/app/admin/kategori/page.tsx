@@ -131,7 +131,7 @@ export default function KategoriContent() {
         console.error(error); // Log error untuk debugging
         toast.error("Gagal menghapus kategori");
       } finally {
-        setIsLoading(false);
+        setIsLoading(false);  
       }
     }
   };
@@ -141,7 +141,8 @@ export default function KategoriContent() {
   );
 
   function handleEdit(item: Category): void {
-    throw new Error("Function not implemented.");
+    setEditCategory(item); // Menyimpan kategori yang sedang diedit
+    setEditDialogOpen(true); // Membuka dialog atau modal untuk mengedit kategori
   }
 
   return (

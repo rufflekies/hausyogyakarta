@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useId, ReactNode } from "react";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, TrashIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { LoaderCircle, ArrowRightIcon, Search, Plus } from "lucide-react";
 import NavbarAdmin from "@/components/NavbarAdmin";
 import { authApi } from "@/lib/api";
@@ -33,7 +33,16 @@ export default function PelangganContent() {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  interface User {
+    role: ReactNode;
+    createdAt: string | number | Date;
+    id: string;
+    name: string;
+    email: string;
+    // add other properties if needed
+  }
+
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [openDetailDialog, setOpenDetailDialog] = useState(false);
 
   const fetchUsers = async () => {
@@ -43,7 +52,7 @@ export default function PelangganContent() {
       const response = await authApi.getAllUsers(page);
       setUsers(response.data.data);
       setTotalPages(response.data.pagination.pages);
-    } catch (error) {
+    } catch {
       toast.error("Gagal memuat data pengguna");
     } finally {
       setIsLoading(false);
@@ -66,7 +75,7 @@ export default function PelangganContent() {
       toast.success("Berhasil menambah pengguna");
       setOpenDialog(false);
       fetchUsers(); // Refresh the users list
-    } catch (error) {
+    } catch {
       toast.error("Gagal menambah pengguna");
     } finally {
       setIsLoading(false);
@@ -83,20 +92,28 @@ export default function PelangganContent() {
         await authApi.deleteUser(Number(id));
         toast.success("Berhasil menghapus pengguna");
         fetchUsers();
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || "Gagal menghapus pengguna");
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            toast.error(error.message || "Gagal menghapus pengguna");
+          } else {
+            toast.error("Gagal menghapus pengguna");
+          }
       } finally {
         setIsLoading(false);
       }
     }
   };
 
-  // Add these handler functions
-  const handleDetail = (userId: number) => {
-    const user = users.find((u: any) => u.id === userId);
-    setSelectedUser(user);
-    setOpenDetailDialog(true);
-  };
+    // Add these handler functions
+    const handleDetail = (userId: number) => {
+      const user = users.find((u: User) => u.id === userId.toString());
+      if (user) {
+        setSelectedUser(user);
+      } else {
+        setSelectedUser(null);
+      }
+      setOpenDetailDialog(true);
+    };
 
   const filteredData = users.filter(
     (user: any) =>
