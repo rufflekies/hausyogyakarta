@@ -1,205 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MdShoppingCart } from "react-icons/md";
 import { useTheme } from "next-themes";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"; // Import Sonner toast instead of useToast
+import { productsApi, categoriesApi, ordersApi } from "@/lib/api";
 
-// Menambahkan tipe untuk item menu
-type MenuItem = {
+// Type definitions based on API response
+type Product = {
+  id: number;
   name: string;
-  image: string;
-  sizes: { [key: string]: string }; // Ukuran yang berbeda dengan harga
-  price: string;
+  slug: string;
+  description: string;
+  price: number;
+  image: string | null;
+  isAvailable: boolean;
+  categoryId: number;
+  imageUrl?: string;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+    parentId: number | null;
+  };
 };
 
+type Category = {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  parent?: Category;
+  children: Category[];
+  productCount: number;
+  products?: Product[];
+};
 
-const menuHausKlasik: MenuItem[] = [
-  {
-    name: "Thai Tea",
-    image: "/klasik/thai.png",
-    sizes: { Small: "Rp 6.000", Large: "Rp 9.000" },
-    price: "Rp 6.000",
-  },
-  {
-    name: "Green Thai Tea",
-    image: "/klasik/green.png",
-    sizes: { Small: "Rp 8.000", Large: "Rp 10.000" },
-    price: "Rp 8.000",
-  },
-  {
-    name: "Ovaltine",
-    image: "/klasik/oval.png",
-    sizes: { Medium: "Rp 12.000", Large: "Rp 13.000" },
-    price: "Rp 12.000",
-  },
-  {
-    name: "Taro",
-    image: "/klasik/taro.png",
-    sizes: { Medium: "Rp 12.000", Large: "Rp 13.000" },
-    price: "Rp 12.000",
-  },
-  {
-    name: "Oreo",
-    image: "/klasik/oreo.png",
-    sizes: { Medium: "Rp 12.000", Large: "Rp 13.000" },
-    price: "Rp 12.000",
-  },
-  {
-    name: "MILO® Green Tea",
-    image: "/klasik/milo.png",
-    sizes: { Medium: "Rp 12.000", Large: "Rp 13.000" },
-    price: "Rp 12.000",
-  },
-];
+// Menu item for display
+type MenuItem = {
+  id: number;
+  name: string;
+  image: string;
+  description: string;
+  sizes: { [key: string]: string };
+  price: string;
+  categoryId: number;
+  isAvailable: boolean;
+};
 
-const menuHausChoco: MenuItem[] = [
-  {
-    name: "Choco Lava MILO®",
-    image: "/choco/milo.png",
-    sizes: { Medium: "Rp 13.000", Large: "Rp 14.000" },
-    price: "Rp 13.000",
-  },
-  {
-    name: "Choco Hazelnut",
-    image: "/choco/hazel.png",
-    sizes: { Medium: "Rp 13.000", Large: "Rp 14.000" },
-    price: "Rp 13.000",
-  },
-  {
-    name: "Choco Avocado",
-    image: "/choco/avo.png",
-    sizes: { Medium: "Rp 14.000", Large: "Rp 15.000" },
-    price: "Rp 14.000",
-  },
-];
-
-const menuHausBoba: MenuItem[] = [
-  {
-    name: "Boba Fresh Milk",
-    image: "/boba/fresh.png",
-    sizes: { Medium: "Rp 14.000", Large: "Rp 17.000" },
-    price: "Rp 14.000",
-  },
-  {
-    name: "Boba Milk Tea",
-    image: "/boba/tea.png",
-    sizes: { Medium: "Rp 14.000", Large: "Rp 17.000" },
-    price: "Rp 14.000",
-  },
-];
-
-const menuHausPanas: MenuItem[] = [
-  {
-    name: "Hot Lemon Tea",
-    image: "/panas/lemon.png",
-    sizes: { Hot: "Rp 10.000" },
-    price: "Rp 10.000",
-  },
-  {
-    name: "Hot Thai Tea",
-    image: "/panas/thai.png",
-    sizes: { Hot: "Rp 11.000" },
-    price: "Rp 11.000",
-  },
-  {
-    name: "Hot Coffee",
-    image: "/panas/coffee.png",
-    sizes: { Hot: "Rp 14.000" },
-    price: "Rp 14.000",
-  },
-  {
-    name: "Hot Ovaltine",
-    image: "/panas/oval.png",
-    sizes: { Hot: "Rp 14.000" },
-    price: "Rp 14.000",
-  },
-  {
-    name: "Hot Lava MILO®",
-    image: "/panas/milo.png",
-    sizes: { Hot: "Rp 14.000" },
-    price: "Rp 14.000",
-  },
-];
-
-const menuRotiBakar: MenuItem[] = [
-  {
-    name: "Roti Bakar Coklat",
-    image: "/roti/bakarcoklat.png",
-    sizes: { "": "Rp 24.000" },
-    price: "Rp 24.000",
-  },
-  {
-    name: "Roti Bakar Keju",
-    image: "/roti/bakarkeju.png",
-    sizes: { "": "Rp 25.000" },
-    price: "Rp 25.000",
-  },
-  {
-    name: "Roti Bakar Coklat Keju",
-    image: "/roti/bakarcoklatkeju.png",
-    sizes: { "": "Rp 27.000" },
-    price: "Rp 27.000",
-  },
-];
-
-const menuMaryam: MenuItem[] = [
-  {
-    name: "Roti Maryam Coklat",
-    image: "/roti/maryamcoklat.png",
-    sizes: { "": "Rp 13.000" },
-    price: "Rp 13.000",
-  },
-  {
-    name: "Roti Maryam Keju",
-    image: "/roti/maryamkeju.png",
-    sizes: { "": "Rp 14.000" },
-    price: "Rp 14.000",
-  },
-  {
-    name: "Roti Maryam Coklat Keju",
-    image: "/roti/maryamcoklatkeju.png",
-    sizes: { "": "Rp 16.000" },
-    price: "Rp 16.000",
-  },
-];
-
-const menuKukus: MenuItem[] = [
-  {
-    name: "Kukus Coklat",
-    image: "/roti/kukuscoklat.png",
-    sizes: { "": "Rp 10.000" },
-    price: "Rp 10.000",
-  },
-  {
-    name: "Kukus Keju",
-    image: "/roti/kukuskeju.png",
-    sizes: { "": "Rp 11.000" },
-    price: "Rp 11.000",
-  },
-  {
-    name: "Kukus Coklat Keju",
-    image: "/roti/kukuscoklatkeju.png",
-    sizes: { "": "Rp 14.000" },
-    price: "Rp 14.000",
-  },
-];
-
-const menuSections = [
-  { id: "menu1", title: "Menu Haus Klasik", items: menuHausKlasik },
-  { id: "menu2", title: "Menu Choco", items: menuHausChoco },
-  { id: "menu3", title: "Menu Boba", items: menuHausBoba },
-  { id: "menu4", title: "Menu Panas", items: menuHausPanas },
-  { id: "menu5", title: "Roti Bakar", items: menuRotiBakar },
-  { id: "menu6", title: "Roti Maryam", items: menuMaryam },
-  { id: "menu7", title: "Kukus", items: menuKukus },
-];
+type MenuSection = {
+  id: number;
+  title: string;
+  items: MenuItem[];
+};
 
 const MenuFull = () => {
   const { theme } = useTheme();
@@ -207,12 +62,108 @@ const MenuFull = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
-  const [alamat, setAlamat] = useState<string>(""); // Menyimpan alamat
-  const [selectedSize, setSelectedSize] = useState<string>(""); // Menyimpan ukuran yang dipilih
+  const [alamat, setAlamat] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [menuSections, setMenuSections] = useState<MenuSection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    setIsLoggedIn(!!token);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Get all categories
+        const categoriesResponse = await categoriesApi.getAllCategories(1, 100);
+        const categories: Category[] = categoriesResponse.data.data;
+        
+        // Process each category
+        const sections: MenuSection[] = [];
+        
+        for (const category of categories) {
+          // Use products directly from the category object rather than fetching them separately
+          const products = category.products || [];
+          
+          // Transform products to MenuItem format
+          const menuItems: MenuItem[] = products
+            .filter(product => product.isAvailable)
+            .map(product => {
+              // Default sizes based on product price
+              const defaultSizes = {
+                "Medium": `Rp ${product.price}`
+              };
+              
+              // Handle null images
+              let productImage = "/placeholder.png"; // Default placeholder
+              if (product.imageUrl) {
+                productImage = product.imageUrl;
+              } else if (product.image) {
+                productImage = product.image.startsWith('http') ? 
+                  product.image : 
+                  `${process.env.NEXT_PUBLIC_API_URL}${product.image}`;
+              }
+              
+              // Create menu item
+              return {
+                id: product.id,
+                name: product.name,
+                image: productImage,
+                // If product description is missing in the embedded products, use a default
+                description: product.description || "",
+                sizes: defaultSizes,
+                price: `Rp ${product.price}`,
+                categoryId: category.id, // Use category.id since it might not be in the product
+                isAvailable: product.isAvailable
+              };
+            });
+          
+          
+          if (menuItems.length > 0) {
+            sections.push({
+              id: category.id,
+              title: category.name,
+              items: menuItems
+            });
+          }
+        }
+        
+        setMenuSections(sections);
+      } catch (err) {
+        setError("Failed to load menu data. Please try again later.");
+        // Show error toast using Sonner
+        toast.error("Error Loading Menu", {
+          description: "Failed to load menu data. Please try again later.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   const handleAddToCart = (item: MenuItem) => {
+    // Check if user is logged in before proceeding
+    if (!isLoggedIn) {
+      toast.error("Login Required", {
+        description: "Please login to place an order.",
+        action: {
+          label: "Login",
+          onClick: () => window.location.href = "/login"
+        }
+      });
+      return;
+    }
+    
     setSelectedItem(item);
-    setSelectedSize(Object.keys(item.sizes)[0]); // Default memilih ukuran pertama
+    setSelectedSize(Object.keys(item.sizes)[0]); // Default to first size
     setOpenDialog(true);
   };
 
@@ -226,30 +177,62 @@ const MenuFull = () => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedItem || !selectedItem.sizes[selectedSize]) {
-      alert("Ukuran tidak tersedia untuk menu ini.");
+    // Double-check if user is logged in
+    if (!isLoggedIn) {
+      toast.error("Login Required", {
+        description: "Please login to place an order.",
+        action: {
+          label: "Login",
+          onClick: () => window.location.href = "/login"
+        }
+      });
       return;
     }
 
-    // Mengambil harga sesuai ukuran yang dipilih
-    const hargaStr = selectedItem.sizes[selectedSize];
-    const totalHarga =
-      parseInt(hargaStr.replace("Rp ", "").replace(".", "")) * quantity;
+    if (!selectedItem || !selectedItem.sizes[selectedSize]) {
+      // Use Sonner toast for error
+      toast.error("Error", {
+        description: "Ukuran tidak tersedia untuk menu ini."
+      });
+      return;
+    }
 
-    alert(
-      `Order Details:\nNama: ${alamat}\nMenu: ${
-        selectedItem?.name
-      }\nJumlah: ${quantity}\nUkuran: ${selectedSize}\nTotal Harga: ${formatRupiah(
-        totalHarga.toString()
-      )}`
-    );
-    setOpenDialog(false);
+    try {
+      // Prepare order data
+      const orderData = {
+        items: [
+          {
+            productId: selectedItem.id,
+            quantity: quantity,
+          },
+        ],
+        address: alamat,
+      };
+
+      // Submit order to API
+      const response = await ordersApi.createOrder(orderData);
+
+      // Show success toast using Sonner
+      toast.success("Pesanan Berhasil!", {
+        description: `Order ID: ${response.data.id}`
+      });
+      
+      setOpenDialog(false);
+      // Reset form
+      setQuantity(1);
+      setAlamat("");
+    } catch (err) {
+      // Show error toast using Sonner
+      toast.error("Pesanan Gagal", {
+        description: "Gagal membuat pesanan. Silakan Log In."
+      });
+    }
   };
 
-  // Menghitung total harga berdasarkan ukuran dan jumlah
+  // Calculate total price based on size and quantity
   const calculateTotalPrice = () => {
     if (selectedItem && selectedSize) {
       const hargaStr = selectedItem.sizes[selectedSize];
@@ -260,10 +243,14 @@ const MenuFull = () => {
     return "Rp 0";
   };
 
+  if (loading) return <div className="text-center py-12">Loading menu...</div>;
+  if (error)
+    return <div className="text-center py-12 text-red-500">{error}</div>;
+
   return (
     <>
       {menuSections.map((section) => (
-        <section key={section.id} id={section.id} className="mb-12">
+        <section key={section.id} id={`menu${section.id}`} className="mb-12">
           <h2
             className={`text-2xl font-bold mb-6 text-center ${
               isDarkMode ? "text-white" : "text-black"
@@ -272,9 +259,9 @@ const MenuFull = () => {
             {section.title}
           </h2>
           <div className="flex flex-wrap gap-6 justify-center">
-            {section.items.map((item, idx) => (
+            {section.items.map((item) => (
               <div
-                key={idx}
+                key={item.id}
                 className={`rounded-xl shadow-md overflow-hidden flex flex-col items-center p-6 w-fit relative ${
                   isDarkMode ? "bg-black" : "bg-white"
                 }`}
@@ -283,6 +270,11 @@ const MenuFull = () => {
                   src={item.image}
                   alt={item.name}
                   className="w-48 h-48 object-contain rounded-md"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = "/placeholder.png";
+                  }}
                 />
                 <h3
                   className={`text-xl font-semibold text-center ${
@@ -351,6 +343,11 @@ const MenuFull = () => {
                   src={selectedItem.image}
                   alt={selectedItem.name}
                   className="w-64 h-64 object-contain rounded-md mx-auto"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = "/placeholder.png";
+                  }}
                 />
                 <h3
                   className={`mt-2 text-xl font-semibold ${
