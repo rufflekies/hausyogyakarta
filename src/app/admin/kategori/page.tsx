@@ -1,14 +1,7 @@
-"use client"; // Add this line at the top of your file
-
-import { useState, useEffect, useId, useCallback } from "react"; // useCallback to memoize fetchCategories
+"use client";
+import { useState, useEffect, useId } from "react";
 import { useTheme } from "next-themes"; // import useTheme
-import {
-  ChevronDown,
-  PencilIcon,
-  TrashIcon,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronDown, PencilIcon, TrashIcon, ChevronLeft, ChevronRight} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -114,7 +107,7 @@ export default function KategoriContent() {
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editCategory) return;
-
+    
     try {
       setIsLoading(true);
       const formData = new FormData(e.currentTarget);
@@ -261,8 +254,8 @@ export default function KategoriContent() {
                   className="text-muted-foreground"
                 />
               </div>
-              <Button
-                type="submit"
+              <Button 
+                type="submit" 
                 className="text-white w-full mt-4"
                 disabled={isLoading}
               >
@@ -278,9 +271,7 @@ export default function KategoriContent() {
         {/* Edit Dialog */}
         {editCategory && (
           <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent
-              className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}
-            >
+            <DialogContent className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}>
               <DialogTitle className={isDarkMode ? "text-white" : "text-black"}>
                 Edit Kategori
               </DialogTitle>
@@ -308,9 +299,7 @@ export default function KategoriContent() {
                     Parent Kategori
                   </Label>
                   <div className="text-sm text-gray-500 mb-2">
-                    {editCategory.parent
-                      ? `Current: ${editCategory.parent.name}`
-                      : "No parent"}
+                    {editCategory.parent ? `Current: ${editCategory.parent.name}` : 'No parent'}
                   </div>
                   <Input
                     id="parentId"
@@ -368,10 +357,7 @@ export default function KategoriContent() {
             </thead>
             <tbody>
               {filteredData.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-b border-gray-200 transition"
-                >
+                <tr key={item.id} className="border-b border-gray-200 transition">
                   <td className="p-3">{item.id}</td>
                   <td className="p-3">
                     <div className="flex flex-col">
@@ -429,9 +415,7 @@ export default function KategoriContent() {
         </div>
         <div className="mt-4 flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <p
-              className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}
-            >
+            <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
               Halaman {page} dari {totalPages}
             </p>
           </div>
@@ -439,7 +423,7 @@ export default function KategoriContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1 || isLoading}
               className={isDarkMode ? "text-white" : "text-black"}
             >
@@ -449,7 +433,7 @@ export default function KategoriContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages || isLoading}
               className={isDarkMode ? "text-white" : "text-black"}
             >
