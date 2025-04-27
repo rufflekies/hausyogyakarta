@@ -16,15 +16,135 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useId, useState, useEffect } from "react";
+import { authApi } from "@/lib/api"; // Import API functions
+import { useRouter } from "next/navigation"; // Import router
+
+
+const handleApiError = (err) => {
+  console.error("API Error:", {
+    message: err.message,
+    status: err.response?.status,
+    data: err.response?.data,
+    request: {
+      url: err.config?.url,
+      method: err.config?.method,
+      baseURL: err.config?.baseURL,
+    }
+  });
+  
+  return err.response?.data?.message || 
+         "Gagal terhubung ke server. Harap coba lagi nanti.";
+};
 
 const Navbar = () => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const id = useId();
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const router = useRouter();
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  // User state
+  const [user, setUser] = useState(null);
 
   // Untuk menghindari hydration mismatch
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  
+  useEffect(() => {
+    setMounted(true);
+    
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUserProfile();
+    }
+  }, []);
+
+  // Fetch user profile if token exists
+  const fetchUserProfile = async () => {
+    try {
+      const response = await authApi.getProfile();
+      setUser(response.data);
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+      localStorage.removeItem('token');
+    }
+  };
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    const fieldName = id.split('-')[1]; // Extract field name from id
+    
+    setFormData({
+      ...formData,
+      [fieldName]: value,
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      if (authMode === "signin") {
+        // Login
+        const response = await authApi.login({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        setUser(response.data);
+        router.refresh(); 
+        
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          setError("Passwords do not match");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Register
+        const response = await authApi.register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        setUser(response.data);
+        router.refresh(); // Refresh page to update UI
+      }
+      
+      // Close dialog by triggering ESC key
+      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+      document.dispatchEvent(event);
+      
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    authApi.logout();
+    setUser(null);
+    router.refresh();
+  };
 
   if (!mounted) return null;
 
@@ -103,107 +223,181 @@ const Navbar = () => {
                     isDarkMode ? "bg-black text-white" : "bg-white text-black"
                   }`}
                 >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-full">
-                      <Image
-                        src="/logo.png"
-                        alt="Logo"
-                        width={40}
-                        height={40}
-                        className="rounded-full"
-                      />
+                  {user ? (
+                    // User is logged in - show profile info
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-full">
+                        <Image
+                          src="/logo.png"
+                          alt="Logo"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <DialogTitle asChild>
+                          <h2 className="text-lg font-bold">Profile</h2>
+                        </DialogTitle>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Welcome back, {user.name}!
+                        </p>
+                      </div>
+                      <div className="w-full mt-4">
+                        <div className="text-sm mb-4">
+                          <p><strong>Name:</strong> {user.name}</p>
+                          <p><strong>Email:</strong> {user.email}</p>
+                          <p><strong>Role:</strong> {user.role}</p>
+                        </div>
+                        
+                        {/* Add Admin Dashboard Button */}
+                        {user.role === 'ADMIN' && (
+                          <Button
+                            onClick={() => router.push('/admin')}
+                            className="text-black w-full mb-2"
+                            variant="secondary"
+                          >
+                            Dashboard Admin
+                          </Button>
+                        )}
+                        
+                        <Button 
+                          onClick={handleLogout} 
+                          className="text-white w-full"
+                        >
+                          Logout
+                        </Button>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <DialogTitle asChild>
-                        <h2 className="text-lg font-bold">
-                          {authMode === "signin"
-                            ? "Welcome back"
-                            : "Create account"}
-                        </h2>
-                      </DialogTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {authMode === "signin"
-                          ? "Enter your credentials to login."
-                          : "Let's get you set up."}
+                  ) : (
+                    // User is not logged in - show login/signup form
+                    <>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="flex size-11 shrink-0 items-center justify-center rounded-full">
+                          <Image
+                            src="/logo.png"
+                            alt="Logo"
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <DialogTitle asChild>
+                            <h2 className="text-lg font-bold">
+                              {authMode === "signin"
+                                ? "Welcome back"
+                                : "Create account"}
+                            </h2>
+                          </DialogTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {authMode === "signin"
+                              ? "Enter your credentials to login."
+                              : "Let's get you set up."}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {error && (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
+                          {error}
+                        </div>
+                      )}
+                      
+                      <form className="space-y-5" onSubmit={handleSubmit}>
+                        <div className="space-y-4">
+                          {authMode === "signup" && (
+                            <div className="space-y-2">
+                              <Label htmlFor={`${id}-name`}>Username</Label>
+                              <Input
+                                id={`${id}-name`}
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="Enter your username"
+                                required
+                                className="text-muted-foreground"
+                              />
+                            </div>
+                          )}
+                          <div className="space-y-2">
+                            <Label htmlFor={`${id}-email`}>Email</Label>
+                            <Input
+                              id={`${id}-email`}
+                              type="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              placeholder="hi@example.com"
+                              required
+                              className="text-muted-foreground"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`${id}-password`}>Password</Label>
+                            <Input
+                              id={`${id}-password`}
+                              type="password"
+                              value={formData.password}
+                              onChange={handleChange}
+                              placeholder="Enter your password"
+                              required
+                              className="text-muted-foreground"
+                            />
+                          </div>
+                          {authMode === "signup" && (
+                            <div className="space-y-2">
+                              <Label htmlFor={`${id}-confirmPassword`}>
+                                Confirm Password
+                              </Label>
+                              <Input
+                                id={`${id}-confirmPassword`}
+                                type="password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                placeholder="Re-type your password"
+                                required
+                                className="text-muted-foreground"
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <Button 
+                          type="submit" 
+                          className="text-white w-full"
+                          disabled={isLoading}
+                        >
+                          {isLoading 
+                            ? "Processing..."
+                            : authMode === "signin" 
+                              ? "Sign in" 
+                              : "Sign up"
+                          }
+                        </Button>
+                      </form>
+                      <p className="text-sm text-center mt-4">
+                        {authMode === "signin" ? (
+                          <>
+                            Belum punya akun?{" "}
+                            <button
+                              onClick={() => setAuthMode("signup")}
+                              className="text-primary hover:underline"
+                            >
+                              Daftar
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            Sudah punya akun?{" "}
+                            <button
+                              onClick={() => setAuthMode("signin")}
+                              className="text-primary hover:underline"
+                            >
+                              Masuk
+                            </button>
+                          </>
+                        )}
                       </p>
-                    </div>
-                  </div>
-                  <form className="space-y-5">
-                    <div className="space-y-4">
-                      {authMode === "signup" && (
-                        <div className="space-y-2">
-                          <Label htmlFor={`${id}-username`}>Username</Label>
-                          <Input
-                            id={`${id}-username`}
-                            placeholder="Enter your username"
-                            required
-                            className="text-muted-foreground"
-                          />
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        <Label htmlFor={`${id}-email`}>Email</Label>
-                        <Input
-                          id={`${id}-email`}
-                          type="email"
-                          placeholder="hi@example.com"
-                          required
-                          className="text-muted-foreground"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`${id}-password`}>Password</Label>
-                        <Input
-                          id={`${id}-password`}
-                          type="password"
-                          placeholder="Enter your password"
-                          required
-                          className="text-muted-foreground"
-                        />
-                      </div>
-                      {authMode === "signup" && (
-                        <div className="space-y-2">
-                          <Label htmlFor={`${id}-confirm`}>
-                            Confirm Password
-                          </Label>
-                          <Input
-                            id={`${id}-confirm`}
-                            type="password"
-                            placeholder="Re-type your password"
-                            required
-                            className="text-muted-foreground"
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <Button type="submit" className="text-white w-full">
-                      {" "}
-                      {authMode === "signin" ? "Sign in" : "Sign up"}{" "}
-                    </Button>
-                  </form>
-                  <p className="text-sm text-center mt-4">
-                    {authMode === "signin" ? (
-                      <>
-                        Belum punya akun?{" "}
-                        <button
-                          onClick={() => setAuthMode("signup")}
-                          className="text-primary hover:underline"
-                        >
-                          Daftar
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        Sudah punya akun?{" "}
-                        <button
-                          onClick={() => setAuthMode("signin")}
-                          className="text-primary hover:underline"
-                        >
-                          Masuk
-                        </button>
-                      </>
-                    )}
-                  </p>
+                    </>
+                  )}
                 </DialogContent>
               </Dialog>
             </li>

@@ -1,7 +1,6 @@
 "use client";
 import NavbarAdmin from "@/components/NavbarAdmin";
-import { useState, useId } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useId, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
+import { ordersApi } from "@/lib/api";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string | null;
+  isAvailable: boolean;
+}
+
+interface OrderItem {
+  id: number;
+  orderId: number;
+  productId: number;
+  quantity: number;
+  price: number;
+  product: Product;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Order {
+  id: number;
+  userId: number;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+  total: number;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  orderItems: OrderItem[];
+}
 
 export default function PesananContent() {
   const [activeTab, setActiveTab] = useState("Semua");
@@ -20,60 +56,59 @@ export default function PesananContent() {
   const isDarkMode = theme === "dark";
   const inputId = useId();
 
-  const [orders, setOrders] = useState([
-    {
-      id: "0001",
-      nama: "Noval Noval Noval",
-      total: "Rp50.000",
-      status: "Selesai",
-      tanggal: "21/4/25 14:30",
-    },
-    {
-      id: "0002",
-      nama: "Cahyo Cahyo Cahyo",
-      total: "Rp14.000",
-      status: "Dibatalkan",
-      tanggal: "21/4/25 14:32",
-    },
-    {
-      id: "0003",
-      nama: "Siti Aminah",
-      total: "Rp23.000",
-      status: "Proses",
-      tanggal: "21/4/25 14:40",
-    },
-    {
-      id: "0004",
-      nama: "Budi Santoso",
-      total: "Rp100.000",
-      status: "Selesai",
-      tanggal: "21/4/25 14:55",
-    },
-    {
-      id: "0005",
-      nama: "Rina Agustina",
-      total: "Rp75.000",
-      status: "Proses",
-      tanggal: "21/4/25 15:00",
-    },
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const tabs = ["Semua", "Selesai", "Proses", "Dibatalkan"];
 
-  const handleStatusChange = (id: string, newStatus: string) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
-    console.log(`Status pesanan ${id} diubah menjadi ${newStatus}`);
+  const handleStatusChange = async (id: number, newStatus: string) => {
+    try {
+      setIsLoading(true);
+      await ordersApi.updateOrderStatus(id, {
+        status: newStatus as 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED'
+      });
+      toast.success("Status pesanan berhasil diubah");
+      fetchOrders(); // Refresh the orders list
+    } catch (error) {
+      toast.error("Gagal mengubah status pesanan");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredOrders = orders
-    .filter((order) => activeTab === "Semua" || order.status === activeTab)
+    .filter((order) => {
+      if (activeTab === "Semua") return true;
+      const status = order.status;
+      switch (activeTab) {
+        case "Proses": return status === "PROCESSING" || status === "PENDING";
+        case "Selesai": return status === "COMPLETED";
+        case "Dibatalkan": return status === "CANCELLED";
+        default: return true;
+      }
+    })
     .filter((order) =>
-      order.nama.toLowerCase().includes(searchTerm.toLowerCase())
+      order.user.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+  const fetchOrders = async () => {
+    try {
+      setIsLoading(true);
+      const response = await ordersApi.getAllOrders(page, 10);
+      setOrders(response.data.data);
+      setTotalPages(response.data.pagination.pages);
+    } catch (error) {
+      toast.error("Gagal memuat data pesanan");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [page]);
 
   return (
     <>
@@ -139,10 +174,18 @@ export default function PesananContent() {
                 key={order.id}
                 className="border-b border-gray-200 dark:border-zinc-700 transition"
               >
-                <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.nama}</td>
-                <td className="p-3">{order.total}</td>
-                <td className="p-3">{order.tanggal}</td>
+                <td className="p-3">{String(order.id).padStart(4, '0')}</td>
+                <td className="p-3">{order.user.name}</td>
+                <td className="p-3">Rp{order.total.toLocaleString()}</td>
+                <td className="p-3">
+                  {new Date(order.createdAt).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </td>
                 <td className="p-3">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -153,14 +196,17 @@ export default function PesananContent() {
                             : "bg-white text-black hover:bg-gray-100 border-white"
                         }`}
                       >
-                        {order.status}
+                        {order.status === 'PROCESSING' ? 'Proses' : 
+                         order.status === 'COMPLETED' ? 'Selesai' :
+                         order.status === 'CANCELLED' ? 'Dibatalkan' : 
+                         order.status}
                         <ChevronDown size={16} />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       className={`w-40 ${isDarkMode ? "bg-black" : "bg-white"}`}
                     >
-                      {["Proses", "Selesai", "Dibatalkan"].map((status) => (
+                      {["PROCESSING", "COMPLETED", "CANCELLED"].map((status) => (
                         <DropdownMenuItem
                           key={status}
                           onClick={() => handleStatusChange(order.id, status)}
@@ -170,7 +216,10 @@ export default function PesananContent() {
                               : "text-black hover:bg-gray-100"
                           }`}
                         >
-                          {status}
+                          {status === 'PROCESSING' ? 'Proses' :
+                           status === 'COMPLETED' ? 'Selesai' :
+                           status === 'CANCELLED' ? 'Dibatalkan' : 
+                           status}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -187,6 +236,36 @@ export default function PesananContent() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between px-2">
+        <div className="flex items-center gap-2">
+          <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
+            Halaman {page} dari {totalPages}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1 || isLoading}
+            className={isDarkMode ? "text-white" : "text-black"}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous Page</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages || isLoading}
+            className={isDarkMode ? "text-white" : "text-black"}
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next Page</span>
+          </Button>
+        </div>
       </div>
     </>
   );

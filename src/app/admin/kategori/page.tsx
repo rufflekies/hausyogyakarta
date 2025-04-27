@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useId } from "react";
 import { useTheme } from "next-themes"; // import useTheme
-import { ChevronDown, PencilIcon, TrashIcon} from "lucide-react";
+import { ChevronDown, PencilIcon, TrashIcon, ChevronLeft, ChevronRight} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -19,36 +19,131 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoaderCircle, ArrowRightIcon, Search, Plus } from "lucide-react";
 import NavbarAdmin from "@/components/NavbarAdmin";
+import { categoriesApi } from "@/lib/api";
+import { toast } from "sonner";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string | null;
+  isAvailable: boolean;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  parent: Category | null;
+  children: Category[];
+  productCount: number;
+  products: Product[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function KategoriContent() {
   const [search, setSearch] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-  const { theme } = useTheme(); // Hook for theme
-  const [isLoading, setIsLoading] = useState(false); // State for loading
-  const isDarkMode = theme === "dark"; // Check if dark mode is enabled
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage] = useState(5);
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
   const id = useId();
 
-  const kategoriData = [
-    { id: "K001", nama: "Haus", totalProduk: 12 },
-    { id: "K002", nama: "Haus Panas", totalProduk: 12 },
-    { id: "K003", nama: "Makanan", totalProduk: 9 },
-  ];
+  // Add state for editing
+  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleUpdate = (id: string) => {
-    alert(`Update kategori ID: ${id}`);
-  };
-
-  const handleDelete = (id: string) => {
-    const konfirmasi = confirm("Yakin ingin menghapus kategori ini?");
-    if (konfirmasi) {
-      alert(`Hapus kategori ID: ${id}`);
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      setIsLoading(true);
+      const response = await categoriesApi.getAllCategories(page, itemsPerPage);
+      setCategories(response.data.data);
+      setTotalPages(response.data.pagination.pages);
+    } catch (error) {
+      toast.error("Gagal memuat data kategori");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const filteredData = kategoriData.filter(
-    (item) =>
-      item.nama.toLowerCase().includes(search.toLowerCase()) ||
-      item.id.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    fetchCategories();
+  }, [page, itemsPerPage]); // Add itemsPerPage as dependency
+
+  // Handle create category
+  const handleCreateCategory = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      const formData = new FormData(e.currentTarget);
+      await categoriesApi.createCategory({
+        name: formData.get("nama") as string,
+        parentId: Number(formData.get("parentId")) || undefined,
+      });
+      toast.success("Berhasil menambah kategori");
+      setOpenDialog(false);
+      fetchCategories();
+    } catch (error) {
+      toast.error("Gagal menambah kategori");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add handleEdit function
+  const handleEdit = (category: Category) => {
+    setEditCategory(category);
+    setEditDialogOpen(true);
+  };
+
+  // Add handleUpdate function
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editCategory) return;
+    
+    try {
+      setIsLoading(true);
+      const formData = new FormData(e.currentTarget);
+      await categoriesApi.updateCategory(editCategory.id, {
+        name: formData.get("name") as string,
+        parentId: Number(formData.get("parentId")) || undefined,
+      });
+      toast.success("Berhasil mengupdate kategori");
+      setEditDialogOpen(false);
+      fetchCategories();
+    } catch (error) {
+      toast.error("Gagal mengupdate kategori");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle delete category
+  const handleDelete = async (id: number) => {
+    const konfirmasi = confirm("Yakin ingin menghapus kategori ini?");
+    if (konfirmasi) {
+      try {
+        setIsLoading(true);
+        await categoriesApi.deleteCategory(id);
+        toast.success("Berhasil menghapus kategori");
+        fetchCategories();
+      } catch (error) {
+        toast.error("Gagal menghapus kategori");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const filteredData = categories.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -99,7 +194,7 @@ export default function KategoriContent() {
           <DialogTrigger asChild>
             <Button
               variant="outline"
-              className={`aspect-square max-sm:p-0 ${
+              className={` max-sm:p-0 ${
                 isDarkMode
                   ? "text-white bg-black hover:bg-white/20"
                   : "text-black bg-white hover:bg-gray-100"
@@ -127,31 +222,17 @@ export default function KategoriContent() {
                 <p className="text-sm">Masukkan detail kategori baru.</p>
               </div>
             </div>
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleCreateCategory}>
               <div className="space-y-2">
                 <Label
-                  htmlFor={`${id}-id`}
-                  className={isDarkMode ? "text-white" : "text-black"}
-                >
-                  ID
-                </Label>
-                <Input
-                  id={`${id}-id`}
-                  placeholder="Masukkan ID"
-                  type="text"
-                  required
-                  className="text-muted-foreground"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`${id}-kategori`}
+                  htmlFor="nama"
                   className={isDarkMode ? "text-white" : "text-black"}
                 >
                   Nama Kategori
                 </Label>
                 <Input
-                  id={`${id}-kategori`}
+                  id="nama"
+                  name="nama"
                   placeholder="Masukkan Nama Kategori"
                   type="text"
                   required
@@ -160,28 +241,95 @@ export default function KategoriContent() {
               </div>
               <div className="space-y-2">
                 <Label
-                  htmlFor={`${id}-total`}
+                  htmlFor="parentId"
                   className={isDarkMode ? "text-white" : "text-black"}
                 >
-                  Total Produk
+                  Parent Kategori (Optional)
                 </Label>
                 <Input
-                  id={`${id}-total`}
-                  placeholder="Masukkan Total Produk"
+                  id="parentId"
+                  name="parentId"
+                  placeholder="ID Kategori Parent"
                   type="number"
-                  required
                   className="text-muted-foreground"
                 />
               </div>
-              <Button
-                type="submit"
-                className="text-white w-full mt-4 bg-primary"
+              <Button 
+                type="submit" 
+                className="text-white w-full mt-4"
+                disabled={isLoading}
               >
+                {isLoading ? (
+                  <LoaderCircle className="animate-spin mr-2" size={16} />
+                ) : null}
                 Submit
               </Button>
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Dialog */}
+        {editCategory && (
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}>
+              <DialogTitle className={isDarkMode ? "text-white" : "text-black"}>
+                Edit Kategori
+              </DialogTitle>
+              <form onSubmit={handleUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="name"
+                    className={isDarkMode ? "text-white" : "text-black"}
+                  >
+                    Nama Kategori
+                  </Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    defaultValue={editCategory.name}
+                    required
+                    className="text-muted-foreground"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="parentId"
+                    className={isDarkMode ? "text-white" : "text-black"}
+                  >
+                    Parent Kategori
+                  </Label>
+                  <div className="text-sm text-gray-500 mb-2">
+                    {editCategory.parent ? `Current: ${editCategory.parent.name}` : 'No parent'}
+                  </div>
+                  <Input
+                    id="parentId"
+                    name="parentId"
+                    type="number"
+                    placeholder="ID Kategori Parent (kosongkan jika tidak ada)"
+                    defaultValue={editCategory.parentId || ""}
+                    className="text-muted-foreground"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditDialogOpen(false)}
+                    className={isDarkMode ? "text-white" : "text-black"}
+                  >
+                    Batal
+                  </Button>
+                  <Button type="submit" className="text-white">
+                    {isLoading ? (
+                      <LoaderCircle className="animate-spin mr-2" size={16} />
+                    ) : null}
+                    Simpan
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Data Table Section */}
@@ -209,13 +357,19 @@ export default function KategoriContent() {
             </thead>
             <tbody>
               {filteredData.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-b border-gray-200 transition"
-                >
+                <tr key={item.id} className="border-b border-gray-200 transition">
                   <td className="p-3">{item.id}</td>
-                  <td className="p-3">{item.nama}</td>
-                  <td className="p-3">{item.totalProduk}</td>
+                  <td className="p-3">
+                    <div className="flex flex-col">
+                      <span>{item.name}</span>
+                      {item.parent && (
+                        <span className="text-xs text-gray-500">
+                          Parent: {item.parent.name}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3">{item.productCount}</td>
                   <td className="p-3">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -231,16 +385,18 @@ export default function KategoriContent() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-white w-40">
                         <DropdownMenuItem
-                          className="text-black hover:bg-gray-100"
-                          onClick={() => handleUpdate(item.id)}
+                          className="text-black"
+                          onClick={() => handleEdit(item)}
                         >
-                          <PencilIcon size={16} className="mr-2" /> Update
+                          <PencilIcon className="mr-2 h-4 w-4" />
+                          Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="text-red-600 hover:bg-red-100"
+                          className="text-red-500"
                           onClick={() => handleDelete(item.id)}
                         >
-                          <TrashIcon size={16} className="mr-2" /> Hapus
+                          <TrashIcon className="mr-2 h-4 w-4" />
+                          Hapus
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -256,6 +412,35 @@ export default function KategoriContent() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="mt-4 flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
+              Halaman {page} dari {totalPages}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1 || isLoading}
+              className={isDarkMode ? "text-white" : "text-black"}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Previous Page</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || isLoading}
+              className={isDarkMode ? "text-white" : "text-black"}
+            >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Next Page</span>
+            </Button>
+          </div>
         </div>
       </div>
     </>
