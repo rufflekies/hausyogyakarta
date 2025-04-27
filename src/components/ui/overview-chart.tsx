@@ -35,11 +35,11 @@ export function Overview() {
 
         const salesByCategory = new Map<string, number>()
 
-        orders.forEach(order => {
+        orders.forEach((order: { status: string; orderItems: any[] }) => {
           if (order.status === 'COMPLETED') { // Only count completed orders
             order.orderItems.forEach(item => {
               const product = item.product
-              const category = categories.find(c => c.id === product.categoryId)
+              const category = categories.find((c: { id: any }) => c.id === product.categoryId)
               if (category) {
                 const currentTotal = salesByCategory.get(category.name) || 0
                 salesByCategory.set(category.name, currentTotal + (item.price * item.quantity))
