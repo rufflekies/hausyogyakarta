@@ -36,7 +36,7 @@ interface OrderItem {
 interface Order {
   id: number;
   userId: number;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   total: number;
   address: string;
   createdAt: string;
@@ -67,7 +67,7 @@ export default function PesananContent() {
     try {
       setIsLoading(true);
       await ordersApi.updateOrderStatus(id, {
-        status: newStatus as 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED'
+        status: newStatus as 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
       });
       toast.success("Status pesanan berhasil diubah");
       fetchOrders(); // Refresh the orders list
@@ -84,7 +84,7 @@ export default function PesananContent() {
       const status = order.status;
       switch (activeTab) {
         case "Proses": return status === "PROCESSING" || status === "PENDING";
-        case "Selesai": return status === "COMPLETED";
+        case "Selesai": return status === "DELIVERED";
         case "Dibatalkan": return status === "CANCELLED";
         default: return true;
       }
@@ -197,7 +197,7 @@ export default function PesananContent() {
                         }`}
                       >
                         {order.status === 'PROCESSING' ? 'Proses' : 
-                         order.status === 'COMPLETED' ? 'Selesai' :
+                         order.status === 'DELIVERED' ? 'Selesai' :
                          order.status === 'CANCELLED' ? 'Dibatalkan' : 
                          order.status}
                         <ChevronDown size={16} />
@@ -206,7 +206,7 @@ export default function PesananContent() {
                     <DropdownMenuContent
                       className={`w-40 ${isDarkMode ? "bg-black" : "bg-white"}`}
                     >
-                      {["PROCESSING", "COMPLETED", "CANCELLED"].map((status) => (
+                      {["PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"].map((status) => (
                         <DropdownMenuItem
                           key={status}
                           onClick={() => handleStatusChange(order.id, status)}

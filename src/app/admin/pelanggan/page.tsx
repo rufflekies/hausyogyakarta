@@ -362,7 +362,7 @@ export default function PelangganContent() {
                       <DropdownMenuContent className="bg-white w-40">
                         <DropdownMenuItem
                           className="text-black"
-                          onClick={() => handleDetail(item.id)}
+                          onClick={() => handleDetail(Number(item.id))}
                         >
                           Lihat Detail
                         </DropdownMenuItem>
