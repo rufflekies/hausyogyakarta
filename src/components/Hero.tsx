@@ -9,14 +9,11 @@ export default function Hero() {
       {/* Kiri - Text */}
       <div className="md:w-1/2 text-center md:text-left space-y-6">
         <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-          Haus!{" "}
-          <span className="block">
-            Semua Orang Berhak Minum Enak
-          </span>
+          Haus! <span className="block">Semua Orang Berhak Minum Enak</span>
         </h1>
         <p className="text-lg">
-          "Hmm, asli seger banget! Bahan bakunya berkualitas, harganya
-          murah-murah lagi. Cuss ke Haus!" – Ria Ricis
+          &quot;Hmm, asli seger banget! Bahan bakunya berkualitas, harganya
+          murah-murah lagi. Cuss ke Haus!&quot; – Ria Ricis
         </p>
         <a
           href="#menu"

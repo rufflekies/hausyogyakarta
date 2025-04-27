@@ -198,30 +198,29 @@ export default function ProdukContent() {
       submitData.append("image", imageFile);
     }
 
-    try {
-      let response;
-      
-      if (editingProductId) {
-        // Update existing product
-        response = await productsApi.updateProduct(editingProductId, submitData);
-        toast.success("Produk berhasil diperbarui");
-      } else {
-        // Create new product
-        response = await productsApi.createProduct(submitData);
-        toast.success("Produk baru berhasil ditambahkan");
-      }
-      
-      // Refresh product list and close dialog
-      fetchProducts();
-      setOpenDialog(false);
-      resetForm();
-    } catch (error) {
-      console.error("Error submitting product:", error);
-      toast.error("Gagal menyimpan produk. Silakan coba lagi.");
+  try {
+    if (editingProductId) {
+      // Update existing product
+      await productsApi.updateProduct(editingProductId, submitData);
+      toast.success("Produk berhasil diperbarui");
+    } else {
+      // Create new product
+      await productsApi.createProduct(submitData);
+      toast.success("Produk baru berhasil ditambahkan");
+    }
+
+    // Refresh product list and close dialog
+    fetchProducts();
+    setOpenDialog(false);
+    resetForm();
+  } catch (error) {
+    console.error("Error submitting product:", error);
+    toast.error("Gagal menyimpan produk. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   // Handle product deletion
   const handleDelete = async (productId: number) => {

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Import Sonner toast instead of useToast
-import { productsApi, categoriesApi, ordersApi } from "@/lib/api";
+import { categoriesApi, ordersApi } from "@/lib/api";
 import Image from "next/image";
 
 // Type definitions based on API response
