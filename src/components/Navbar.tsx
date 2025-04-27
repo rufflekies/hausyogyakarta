@@ -116,8 +116,7 @@ const Navbar = () => {
     }
   };
 
-  // Handle input changes
-  function handleChange(e: { target: { id: any; value: any; }; }) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { id, value } = e.target;
     const fieldName = id.split("-")[1]; // Extract field name from id
 
