@@ -116,7 +116,7 @@ export default function PelangganContent() {
     };
 
   const filteredData = users.filter(
-    (user: any) =>
+    (user: User) =>
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -327,8 +327,11 @@ export default function PelangganContent() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((item: any) => (
-                <tr key={item.id} className="border-b border-gray-200 transition">
+              {filteredData.map((item: User) => (
+                <tr
+                  key={item.id}
+                  className="border-b border-gray-200 transition"
+                >
                   <td className="p-3">{item.id}</td>
                   <td className="p-3">{item.name}</td>
                   <td className="p-3">{item.email}</td>
@@ -382,11 +385,17 @@ export default function PelangganContent() {
 
       {selectedUser && (
         <Dialog open={openDetailDialog} onOpenChange={setOpenDetailDialog}>
-          <DialogContent className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}>
+          <DialogContent
+            className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}
+          >
             <div className="flex flex-col items-center gap-2">
               <div className="text-center">
                 <DialogTitle asChild>
-                  <h2 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-black"}`}>
+                  <h2
+                    className={`text-lg font-bold ${
+                      isDarkMode ? "text-white" : "text-black"
+                    }`}
+                  >
                     Detail Pelanggan
                   </h2>
                 </DialogTitle>
@@ -394,33 +403,58 @@ export default function PelangganContent() {
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <p className={`text-sm font-medium ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                <p
+                  className={`text-sm font-medium ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   Nama
                 </p>
-                <p className={isDarkMode ? "text-white" : "text-black"}>{selectedUser.name}</p>
+                <p className={isDarkMode ? "text-white" : "text-black"}>
+                  {selectedUser.name}
+                </p>
               </div>
               <div className="space-y-2">
-                <p className={`text-sm font-medium ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                <p
+                  className={`text-sm font-medium ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   Email
                 </p>
-                <p className={isDarkMode ? "text-white" : "text-black"}>{selectedUser.email}</p>
+                <p className={isDarkMode ? "text-white" : "text-black"}>
+                  {selectedUser.email}
+                </p>
               </div>
               <div className="space-y-2">
-                <p className={`text-sm font-medium ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                <p
+                  className={`text-sm font-medium ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   Role
                 </p>
-                <p className={isDarkMode ? "text-white" : "text-black"}>{selectedUser.role}</p>
+                <p className={isDarkMode ? "text-white" : "text-black"}>
+                  {selectedUser.role}
+                </p>
               </div>
               <div className="space-y-2">
-                <p className={`text-sm font-medium ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                <p
+                  className={`text-sm font-medium ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   Tanggal Bergabung
                 </p>
                 <p className={isDarkMode ? "text-white" : "text-black"}>
-                  {new Date(selectedUser.createdAt).toLocaleDateString("id-ID", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {new Date(selectedUser.createdAt).toLocaleDateString(
+                    "id-ID",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )}
                 </p>
               </div>
             </div>

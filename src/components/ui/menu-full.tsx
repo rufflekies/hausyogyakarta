@@ -141,7 +141,7 @@ const MenuFull = () => {
         }
 
         setMenuSections(sections);
-      } catch (error) {
+      } catch  {
         setError("Gagal memuat data menu. Coba lagi nanti.");
         toast.error("Error Memuat Menu", {
           description: "Gagal memuat data menu. Silakan coba lagi nanti.",

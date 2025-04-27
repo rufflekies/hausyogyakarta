@@ -71,7 +71,7 @@ export default function PesananContent() {
       });
       toast.success("Status pesanan berhasil diubah");
       fetchOrders(); // Refresh the orders list
-    } catch (error) {
+    } catch {
       toast.error("Gagal mengubah status pesanan");
     } finally {
       setIsLoading(false);
@@ -99,7 +99,7 @@ export default function PesananContent() {
       const response = await ordersApi.getAllOrders(page, 10);
       setOrders(response.data.data);
       setTotalPages(response.data.pagination.pages);
-    } catch (error) {
+    } catch {
       toast.error("Gagal memuat data pesanan");
     } finally {
       setIsLoading(false);
