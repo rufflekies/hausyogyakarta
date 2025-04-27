@@ -52,8 +52,16 @@ export default function Dashboard() {
           totalCustomers: usersRes.data.pagination.total,
         });
 
-        // Format recent orders
-        const formattedOrders = ordersRes.data.data.map((order: { id: any; user: { name: any; }; createdAt: string | number | Date; status: string; }) => ({
+        type Order = {
+          id: number | string;
+          user: {
+            name: string;
+          };
+          createdAt: string | number | Date;
+          status: string;
+        };
+
+        const formattedOrders = ordersRes.data.data.map((order: Order) => ({
           id: String(order.id).padStart(4, "0"),
           nama: order.user.name,
           tanggal: new Date(order.createdAt).toLocaleString("id-ID", {
@@ -63,6 +71,7 @@ export default function Dashboard() {
             hour: "2-digit",
             minute: "2-digit",
           }),
+
           status:
             order.status === "PENDING"
               ? "Proses"
