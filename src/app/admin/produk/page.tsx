@@ -48,7 +48,7 @@ interface Product {
     parentId?: number | null;
   };
   imageUrl: string;
-}
+};
 
 export default function ProdukContent() {
   const [openDialog, setOpenDialog] = useState(false);
@@ -198,44 +198,35 @@ export default function ProdukContent() {
       submitData.append("image", imageFile);
     }
 
-    try {
-      let response;
-      
-      if (editingProductId) {
-        // Update existing product
-        response = await productsApi.updateProduct(editingProductId, submitData);
-        toast.success("Produk berhasil diperbarui");
-      } else {
-        // Create new product
-        response = await productsApi.createProduct(submitData);
-        toast.success("Produk baru berhasil ditambahkan");
-      }
-      
-      // Refresh product list and close dialog
-      fetchProducts();
-      setOpenDialog(false);
-      resetForm();
-    } catch (error) {
-      console.error("Error submitting product:", error);
-      toast.error("Gagal menyimpan produk. Silakan coba lagi.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
-  // Handle product deletion
-  const handleDelete = async (productId: number) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
-      try {
-        await productsApi.deleteProduct(productId);
-        toast.success("Produk berhasil dihapus");
-        fetchProducts();
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        toast.error("Gagal menghapus produk. Silakan coba lagi.");
-      }
+  try {
+    if (editingProductId) {
+      // Update existing product
+      await productsApi.updateProduct(editingProductId, submitData);
+      toast.success("Produk berhasil diperbarui");
+    } else {
+      // Create new product
+      await productsApi.createProduct(submitData);
+      toast.success("Produk baru berhasil ditambahkan");
     }
-  };
+  } catch (error) {
+    toast.error("Terjadi kesalahan, silakan coba lagi");
+  }
+
+
+    // Handle product deletion
+    const handleDelete = async (productId: number) => {
+      if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+        try {
+          await productsApi.deleteProduct(productId);
+          toast.success("Produk berhasil dihapus");
+          fetchProducts();
+        } catch (error) {
+          console.error("Error deleting product:", error);
+          toast.error("Gagal menghapus produk. Silakan coba lagi.");
+        }
+      }
+    };
 
   // Format price to IDR
   const formatPrice = (price: number) => {
@@ -586,37 +577,37 @@ export default function ProdukContent() {
         
         {/* Pagination */}
         {pagination.pages > 1 && (
-  <div className="mt-4 flex items-center justify-between px-2">
-    <div className="flex items-center gap-2">
-      <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
-        Halaman {pagination.page} dari {pagination.pages}
-      </p>
-    </div>
-    <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-        disabled={pagination.page === 1 || isLoading}
-        className={isDarkMode ? "text-white" : "text-black"}
-      >
-        <ChevronLeft className="h-4 w-4" />
-        <span className="sr-only">Previous Page</span>
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
-        disabled={pagination.page === pagination.pages || isLoading}
-        className={isDarkMode ? "text-white" : "text-black"}
-      >
-        <ChevronRight className="h-4 w-4" />
-        <span className="sr-only">Next Page</span>
-      </Button>
-    </div>
-  </div>
-)}
+        <div className="mt-4 flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
+              Halaman {pagination.page} dari {pagination.pages}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+              disabled={pagination.page === 1 || isLoading}
+              className={isDarkMode ? "text-white" : "text-black"}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Previous Page</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
+              disabled={pagination.page === pagination.pages || isLoading}
+              className={isDarkMode ? "text-white" : "text-black"}
+            >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Next Page</span>
+            </Button>
+          </div>
+        </div>
+      )}
       </div>
     </>
   );
-}
+}}
