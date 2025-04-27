@@ -1,84 +1,142 @@
-"use client"
+"use client";
 
-import { useTheme } from "next-themes"
-import { useState, useEffect } from "react"
-import { Cell, Pie, PieChart, ResponsiveContainer, Legend, Tooltip } from "recharts"
-import { categoriesApi, ordersApi } from "@/lib/api"
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
+import { categoriesApi, ordersApi } from "@/lib/api";
 
 // Interface untuk data chart
 interface ChartData {
-  name: string
-  value: number
-  color: string
+  name: string;
+  value: number;
+  color: string;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#8a489c'];
+// Interface untuk item di order
+interface Product {
+  id: string;
+  categoryId: string;
+}
+
+interface OrderItem {
+  product: Product;
+  price: number;
+  quantity: number;
+}
+
+interface Order {
+  status: string;
+  orderItems: OrderItem[];
+}
+
+// Interface untuk kategori
+interface Category {
+  id: string;
+  name: string;
+}
+
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884d8",
+  "#8a489c",
+];
 
 export function Overview() {
-  const { theme } = useTheme()
-  const isDarkMode = theme === "dark"
-  const [data, setData] = useState<ChartData[]>([])
-  const [loading, setLoading] = useState(true)
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+  const [data, setData] = useState<ChartData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSalesData = async () => {
       try {
-        setLoading(true)
+        setLoading(true);
+
         // Fetch orders and categories
         const [ordersResponse, categoriesResponse] = await Promise.all([
-          ordersApi.getAllOrders(1, 100), // Get more orders for better data
-          categoriesApi.getAllCategories(1, 100)
-        ])
+          ordersApi.getAllOrders(1, 100),
+          categoriesApi.getAllCategories(1, 100),
+        ]);
 
-        const orders = ordersResponse.data.data
-        const categories = categoriesResponse.data.data
+        // Pastikan types data yang diterima
+        const orders: Order[] = ordersResponse.data.data;
+        const categories: Category[] = categoriesResponse.data.data;
 
-        const salesByCategory = new Map<string, number>()
+        const salesByCategory = new Map<string, number>();
 
-        orders.forEach((order: { status: string; orderItems: any[] }) => {
-          if (order.status === 'COMPLETED') { // Only count completed orders
-            order.orderItems.forEach(item => {
-              const product = item.product
-              const category = categories.find((c: { id: any }) => c.id === product.categoryId)
+        orders.forEach((order) => {
+          if (order.status === "COMPLETED") {
+            order.orderItems.forEach((item) => {
+              const product = item.product;
+              const category = categories.find(
+                (c) => c.id === product.categoryId
+              );
               if (category) {
-                const currentTotal = salesByCategory.get(category.name) || 0
-                salesByCategory.set(category.name, currentTotal + (item.price * item.quantity))
+                const currentTotal = salesByCategory.get(category.name) || 0;
+                salesByCategory.set(
+                  category.name,
+                  currentTotal + item.price * item.quantity
+                );
               }
-            })
+            });
           }
-        })
+        });
 
-        // Convert to chart data format
-        const chartData = Array.from(salesByCategory.entries()).map(([name, value], index) => ({
+        // Convert ke format ChartData
+        const chartData: ChartData[] = Array.from(
+          salesByCategory.entries()
+        ).map(([name, value], index) => ({
           name,
           value,
-          color: COLORS[index % COLORS.length]
-        }))
+          color: COLORS[index % COLORS.length],
+        }));
 
-        setData(chartData)
+        setData(chartData);
       } catch (error) {
-        console.error('Error fetching sales data:', error)
+        console.error("Error fetching sales data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchSalesData()
-  }, [])
+    fetchSalesData();
+  }, []);
 
   if (loading) {
     return (
-      <div className={`rounded-lg p-6 shadow-lg ${isDarkMode ? "bg-neutral-900" : "bg-white"}`}>
+      <div
+        className={`rounded-lg p-6 shadow-lg ${
+          isDarkMode ? "bg-neutral-900" : "bg-white"
+        }`}
+      >
         <div className="flex justify-center items-center h-[350px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className={`rounded-lg p-6 shadow-lg ${isDarkMode ? "bg-neutral-900" : "bg-white"}`}>
-      <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-black"}`}>
+    <div
+      className={`rounded-lg p-6 shadow-lg ${
+        isDarkMode ? "bg-neutral-900" : "bg-white"
+      }`}
+    >
+      <h2
+        className={`text-lg font-semibold mb-4 ${
+          isDarkMode ? "text-white" : "text-black"
+        }`}
+      >
         Penjualan per Kategori
       </h2>
       <ResponsiveContainer width="100%" height={350}>
@@ -88,7 +146,9 @@ export function Overview() {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+            label={({ name, percent }) =>
+              `${name} (${(percent * 100).toFixed(0)}%)`
+            }
             outerRadius={120}
             fill="#8884d8"
             dataKey="value"
@@ -105,11 +165,11 @@ export function Overview() {
               borderRadius: "8px",
               boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
             }}
-            labelStyle={{ color: isDarkMode ? "#ffffff" : "#000000"}}
+            labelStyle={{ color: isDarkMode ? "#ffffff" : "#000000" }}
           />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
