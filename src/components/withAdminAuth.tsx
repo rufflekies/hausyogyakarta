@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
+// Loading screen component
 const LoadingScreen = () => {
   return (
     <div className="flex justify-center items-center h-screen">
@@ -12,8 +13,11 @@ const LoadingScreen = () => {
   );
 };
 
-export default function withAdminAuth(Component: React.ComponentType) {
-  return function ProtectedRoute(props: any) {
+// Higher-Order Component with generics
+export default function withAdminAuth<T extends object>(
+  Component: React.ComponentType<T>
+) {
+  return function ProtectedRoute(props: T) {
     const { user, loading, isAdmin } = useAuth();
     const router = useRouter();
     const [checking, setChecking] = useState(true);
@@ -21,9 +25,9 @@ export default function withAdminAuth(Component: React.ComponentType) {
     useEffect(() => {
       if (!loading) {
         if (!user) {
-          router.push('/');
+          router.push("/");
         } else if (!isAdmin()) {
-          router.push('/');
+          router.push("/");
         } else {
           setChecking(false);
         }
@@ -34,7 +38,7 @@ export default function withAdminAuth(Component: React.ComponentType) {
       return <LoadingScreen />;
     }
 
-    // Render komponen hanya jika user adalah admin
+    // Render component only if the user is an admin
     return <Component {...props} />;
   };
 }

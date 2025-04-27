@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Import Sonner toast instead of useToast
 import { productsApi, categoriesApi, ordersApi } from "@/lib/api";
+import Image from "next/image";
 
 // Type definitions based on API response
 type Product = {
@@ -79,91 +80,94 @@ const MenuFull = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Get all categories
+
+        // Mendapatkan semua kategori
         const categoriesResponse = await categoriesApi.getAllCategories(1, 100);
         const categories: Category[] = categoriesResponse.data.data;
-        
-        // Process each category
+
+        if (!categories || categories.length === 0) {
+          throw new Error("Kategori tidak ditemukan.");
+        }
+
         const sections: MenuSection[] = [];
-        
+
         for (const category of categories) {
-          // Use products directly from the category object rather than fetching them separately
+          // Gunakan produk yang sudah ada di objek kategori daripada mengambilnya terpisah
           const products = category.products || [];
-          
-          // Transform products to MenuItem format
+
           const menuItems: MenuItem[] = products
-            .filter(product => product.isAvailable)
-            .map(product => {
-              // Default sizes based on product price
+            .filter((product) => product.isAvailable)
+            .map((product) => {
+              // Ukuran default berdasarkan harga produk
               const defaultSizes = {
-                "Medium": `Rp ${product.price}`
+                Medium: `Rp ${product.price}`,
               };
-              
-              // Handle null images
-              let productImage = "/placeholder.png"; // Default placeholder
-              if (product.imageUrl) {
-                productImage = product.imageUrl;
-              } else if (product.image) {
-                productImage = product.image.startsWith('http') ? 
-                  product.image : 
-                  `${process.env.NEXT_PUBLIC_API_URL}${product.image}`;
+
+              // Menangani gambar yang null
+              let productImage = "/placeholder.png"; // Default to placeholder
+
+              // Check if product image exists and is a valid URL
+              if (product.image) {
+                try {
+                  // Attempt to create a valid URL
+                  const imageUrl = new URL(product.image, process.env.NEXT_PUBLIC_API_URL);
+                  productImage = imageUrl.toString();
+                } catch (error) {
+                  // If URL construction fails, fall back to the placeholder
+                  console.error("Invalid image URL:", product.image, error);
+                  productImage = "/placeholder.png";
+                }
               }
-              
-              // Create menu item
+
               return {
                 id: product.id,
                 name: product.name,
                 image: productImage,
-                // If product description is missing in the embedded products, use a default
                 description: product.description || "",
                 sizes: defaultSizes,
                 price: `Rp ${product.price}`,
-                categoryId: category.id, // Use category.id since it might not be in the product
-                isAvailable: product.isAvailable
+                categoryId: category.id,
+                isAvailable: product.isAvailable,
               };
             });
-          
-          
+
           if (menuItems.length > 0) {
             sections.push({
               id: category.id,
               title: category.name,
-              items: menuItems
+              items: menuItems,
             });
           }
         }
-        
+
         setMenuSections(sections);
-      } catch (err) {
-        setError("Failed to load menu data. Please try again later.");
-        // Show error toast using Sonner
-        toast.error("Error Loading Menu", {
-          description: "Failed to load menu data. Please try again later.",
+      } catch (error) {
+        setError("Gagal memuat data menu. Coba lagi nanti.");
+        toast.error("Error Memuat Menu", {
+          description: "Gagal memuat data menu. Silakan coba lagi nanti.",
         });
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
-
+  
   const handleAddToCart = (item: MenuItem) => {
-    // Check if user is logged in before proceeding
     if (!isLoggedIn) {
       toast.error("Login Required", {
-        description: "Please login to place an order.",
+        description: "Silakan login untuk memesan.",
         action: {
           label: "Login",
-          onClick: () => window.location.href = "/login"
-        }
+          onClick: () => (window.location.href = "/login"),
+        },
       });
       return;
     }
-    
+
     setSelectedItem(item);
-    setSelectedSize(Object.keys(item.sizes)[0]); // Default to first size
+    setSelectedSize(Object.keys(item.sizes)[0]); // Default ke ukuran pertama
     setOpenDialog(true);
   };
 
@@ -180,28 +184,25 @@ const MenuFull = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Double-check if user is logged in
     if (!isLoggedIn) {
       toast.error("Login Required", {
-        description: "Please login to place an order.",
+        description: "Silakan login untuk memesan.",
         action: {
           label: "Login",
-          onClick: () => window.location.href = "/login"
-        }
+          onClick: () => (window.location.href = "/login"),
+        },
       });
       return;
     }
 
     if (!selectedItem || !selectedItem.sizes[selectedSize]) {
-      // Use Sonner toast for error
       toast.error("Error", {
-        description: "Ukuran tidak tersedia untuk menu ini."
+        description: "Ukuran tidak tersedia untuk menu ini.",
       });
       return;
     }
 
     try {
-      // Prepare order data
       const orderData = {
         items: [
           {
@@ -212,22 +213,19 @@ const MenuFull = () => {
         address: alamat,
       };
 
-      // Submit order to API
       const response = await ordersApi.createOrder(orderData);
 
-      // Show success toast using Sonner
       toast.success("Pesanan Berhasil!", {
-        description: `Order ID: ${response.data.id}`
+        description: `Order ID: ${response.data.id}`,
       });
-      
+
       setOpenDialog(false);
-      // Reset form
       setQuantity(1);
       setAlamat("");
     } catch (err) {
-      // Show error toast using Sonner
+      console.error(err); // Menambahkan logging error
       toast.error("Pesanan Gagal", {
-        description: "Gagal membuat pesanan. Silakan Log In."
+        description: "Gagal membuat pesanan. Silakan coba lagi nanti.",
       });
     }
   };
@@ -266,14 +264,16 @@ const MenuFull = () => {
                   isDarkMode ? "bg-black" : "bg-white"
                 }`}
               >
-                <img
+                <Image
                   src={item.image}
                   alt={item.name}
-                  className="w-48 h-48 object-contain rounded-md"
+                  width={192} // Set image width
+                  height={192} // Set image height
+                  className="object-contain rounded-md"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    target.src = "/placeholder.png";
+                    target.src = "/placeholder.png"; // Use placeholder if error occurs
                   }}
                 />
                 <h3
@@ -339,16 +339,19 @@ const MenuFull = () => {
             {/* Menampilkan gambar item yang dipilih */}
             {selectedItem && (
               <div className="mb-4 text-center">
-                <img
-                  src={selectedItem.image}
+                <Image
+                  src={selectedItem.image || "/placeholder.png"}
                   alt={selectedItem.name}
-                  className="w-64 h-64 object-contain rounded-md mx-auto"
+                  width={256}
+                  height={256}
+                  className="object-contain rounded-md mx-auto"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
                     target.src = "/placeholder.png";
                   }}
                 />
+
                 <h3
                   className={`mt-2 text-xl font-semibold ${
                     isDarkMode ? "text-white" : "text-black"

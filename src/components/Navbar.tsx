@@ -38,7 +38,7 @@ const handleApiError = (err) => {
 };
 
 const Navbar = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const id = useId();
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const router = useRouter();
