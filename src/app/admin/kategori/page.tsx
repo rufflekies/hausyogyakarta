@@ -1,3 +1,5 @@
+"use client"; // Add this line at the top of your file
+
 import { useState, useEffect, useId, useCallback } from "react"; // useCallback to memoize fetchCategories
 import { useTheme } from "next-themes"; // import useTheme
 import {
@@ -60,11 +62,12 @@ export default function KategoriContent() {
   const isDarkMode = theme === "dark";
   const id = useId();
 
+  // Add state for editing
   const [editCategory, setEditCategory] = useState<Category | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Memoize fetchCategories function using useCallback
-  const fetchCategories = useCallback(async () => {
+  // Fetch categories
+  const fetchCategories = async () => {
     try {
       setIsLoading(true);
       const response = await categoriesApi.getAllCategories(page, itemsPerPage);
@@ -75,12 +78,13 @@ export default function KategoriContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, itemsPerPage]); // Dependencies: page, itemsPerPage
+  };
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]); // use fetchCategories as dependency
+  }, [page, itemsPerPage]); // Add itemsPerPage as dependency
 
+  // Handle create category
   const handleCreateCategory = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -100,11 +104,13 @@ export default function KategoriContent() {
     }
   };
 
+  // Add handleEdit function
   const handleEdit = (category: Category) => {
     setEditCategory(category);
     setEditDialogOpen(true);
   };
 
+  // Add handleUpdate function
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editCategory) return;
@@ -126,6 +132,7 @@ export default function KategoriContent() {
     }
   };
 
+  // Handle delete category
   const handleDelete = async (id: number) => {
     const konfirmasi = confirm("Yakin ingin menghapus kategori ini?");
     if (konfirmasi) {
