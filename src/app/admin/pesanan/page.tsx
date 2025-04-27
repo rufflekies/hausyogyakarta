@@ -1,6 +1,6 @@
 "use client";
 import NavbarAdmin from "@/components/NavbarAdmin";
-import { useState, useId, useEffect } from "react";
+import { useState, useId, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,11 +105,15 @@ export default function PesananContent() {
       setIsLoading(false);
     }
   };
+  
+  const fetchCategories = useCallback(() => {
+    // Your fetching logic here
+  }, []);
 
   useEffect(() => {
     fetchOrders();
-  }, [page]);
-
+  }, [page, fetchCategories]);
+  
   return (
     <>
       <NavbarAdmin title="Pesanan" />
