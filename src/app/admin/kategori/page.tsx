@@ -67,9 +67,8 @@ export default function KategoriContent() {
       setCategories(response.data.data);
       setTotalPages(response.data.pagination.pages);
     } catch (error) {
+      console.error(error); // Log the error to the console
       toast.error("Gagal memuat data kategori");
-    } finally {
-      setIsLoading(false);
     }
   };
 
