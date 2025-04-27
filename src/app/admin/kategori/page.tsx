@@ -75,7 +75,6 @@ export default function KategoriContent() {
   useEffect(() => {
     fetchCategories();
   }, [page, itemsPerPage]); // Add itemsPerPage as dependency
-
   // Handle create category
   const handleCreateCategory = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,23 +89,17 @@ export default function KategoriContent() {
       setOpenDialog(false);
       fetchCategories();
     } catch (error) {
+      console.error(error); // Log error untuk debugging
       toast.error("Gagal menambah kategori");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Add handleEdit function
-  const handleEdit = (category: Category) => {
-    setEditCategory(category);
-    setEditDialogOpen(true);
-  };
-
-  // Add handleUpdate function
+  // Handle update category
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editCategory) return;
-    
     try {
       setIsLoading(true);
       const formData = new FormData(e.currentTarget);
@@ -118,6 +111,7 @@ export default function KategoriContent() {
       setEditDialogOpen(false);
       fetchCategories();
     } catch (error) {
+      console.error(error); // Log error untuk debugging
       toast.error("Gagal mengupdate kategori");
     } finally {
       setIsLoading(false);
@@ -134,6 +128,7 @@ export default function KategoriContent() {
         toast.success("Berhasil menghapus kategori");
         fetchCategories();
       } catch (error) {
+        console.error(error); // Log error untuk debugging
         toast.error("Gagal menghapus kategori");
       } finally {
         setIsLoading(false);
@@ -144,6 +139,10 @@ export default function KategoriContent() {
   const filteredData = categories.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  function handleEdit(item: Category): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <>
@@ -253,8 +252,8 @@ export default function KategoriContent() {
                   className="text-muted-foreground"
                 />
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="text-white w-full mt-4"
                 disabled={isLoading}
               >
@@ -270,7 +269,9 @@ export default function KategoriContent() {
         {/* Edit Dialog */}
         {editCategory && (
           <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}>
+            <DialogContent
+              className={`max-w-md ${isDarkMode ? "bg-black" : "bg-white"}`}
+            >
               <DialogTitle className={isDarkMode ? "text-white" : "text-black"}>
                 Edit Kategori
               </DialogTitle>
@@ -298,7 +299,9 @@ export default function KategoriContent() {
                     Parent Kategori
                   </Label>
                   <div className="text-sm text-gray-500 mb-2">
-                    {editCategory.parent ? `Current: ${editCategory.parent.name}` : 'No parent'}
+                    {editCategory.parent
+                      ? `Current: ${editCategory.parent.name}`
+                      : "No parent"}
                   </div>
                   <Input
                     id="parentId"
@@ -356,7 +359,10 @@ export default function KategoriContent() {
             </thead>
             <tbody>
               {filteredData.map((item) => (
-                <tr key={item.id} className="border-b border-gray-200 transition">
+                <tr
+                  key={item.id}
+                  className="border-b border-gray-200 transition"
+                >
                   <td className="p-3">{item.id}</td>
                   <td className="p-3">
                     <div className="flex flex-col">
@@ -414,7 +420,9 @@ export default function KategoriContent() {
         </div>
         <div className="mt-4 flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
+            <p
+              className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}
+            >
               Halaman {page} dari {totalPages}
             </p>
           </div>
@@ -422,7 +430,7 @@ export default function KategoriContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1 || isLoading}
               className={isDarkMode ? "text-white" : "text-black"}
             >
@@ -432,7 +440,7 @@ export default function KategoriContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages || isLoading}
               className={isDarkMode ? "text-white" : "text-black"}
             >
