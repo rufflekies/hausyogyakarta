@@ -30,7 +30,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://103.210.35.189:8111/api/:path*', // Gunakan http, bukan https
+        destination: 'http://103.210.35.189:8111/:path*', // Gunakan http, bukan https
       },
     ];
   },
