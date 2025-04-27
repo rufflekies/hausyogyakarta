@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import withAdminAuth from "@/components/withAdminAuth";
 import { useAuthContext } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface NavbarAdminProps {
   title?: string;
@@ -26,6 +26,7 @@ function NavbarAdmin({ title }: NavbarAdminProps) {
   const { user, logout } = useAuthContext();
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsMounted(true);
@@ -45,7 +46,7 @@ function NavbarAdmin({ title }: NavbarAdminProps) {
 
   // Menentukan apakah link sedang aktif berdasarkan path halaman
   const getActiveLinkClass = (path: string) => {
-    return router.pathname === path ? "text-primary" : "";
+    return pathname === path ? "text-primary" : "";
   };
 
   return (
@@ -196,5 +197,4 @@ function NavbarAdmin({ title }: NavbarAdminProps) {
     </header>
   );
 }
-
 export default withAdminAuth(NavbarAdmin);
