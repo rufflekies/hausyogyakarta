@@ -1,7 +1,7 @@
 "use client";
 import NavbarAdmin from "@/components/NavbarAdmin";
-import { useState, useEffect, useId } from "react";
-import { useTheme } from "next-themes"; // import useTheme
+import { useState, useEffect, useId, useRef } from "react";
+import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,56 +17,233 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, BoltIcon, TrashIcon } from "lucide-react";
-import { LoaderCircle, ArrowRightIcon, Search, Plus } from "lucide-react";
+import { 
+  ChevronDown, ChevronLeft,ChevronRight,
+  BoltIcon, 
+  TrashIcon, 
+  LoaderCircle, 
+  ArrowRightIcon, 
+  Search, 
+  Plus
+} from "lucide-react";
+import { productsApi } from "@/lib/api"; // Update path as needed
+import { toast } from "sonner"; // Import toast from sonner
+
+// Define product type based on API response
+interface Product {
+  id: number;
+  name: string;
+  slug?: string;
+  description: string;
+  price: number;
+  image: string;
+  isAvailable: boolean;
+  categoryId: number;
+  createdAt?: string;
+  updatedAt?: string;
+  category?: {
+    id: number;
+    name: string;
+    slug?: string;
+    parentId?: number | null;
+  };
+  imageUrl: string;
+}
 
 export default function ProdukContent() {
   const [openDialog, setOpenDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 4,
+    total: 0,
+    pages: 1
+  });
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    description: "",
+    categoryId: "",
+    isAvailable: true,
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const id = useId();
-  const { theme, setTheme } = useTheme(); // Hook untuk tema
-  const isDarkMode = theme === "dark"; // Cek apakah mode gelap aktif
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
 
-  const produkData = [
-    { id: "P001", nama: "Es Teh Manis", kategori: "Haus", harga: "Rp5.000" },
-    {
-      id: "P002",
-      nama: "Nasi Goreng Spesial",
-      kategori: "Makanan",
-      harga: "Rp15.000",
-    },
-    { id: "P003", nama: "Teh Tarik", kategori: "Haus Panas", harga: "Rp7.000" },
-    { id: "P004", nama: "Mie Ayam", kategori: "Makanan", harga: "Rp12.000" },
-    {
-      id: "P005",
-      nama: "Kopi Susu",
-      kategori: "Haus Panas",
-      harga: "Rp10.000",
-    },
-    { id: "P006", nama: "Jus Alpukat", kategori: "Haus", harga: "Rp8.000" },
-    { id: "P007", nama: "Air Mineral", kategori: "Haus", harga: "Rp3.000" },
-  ];
+  // Function to fetch products from API
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await productsApi.getAllProducts(
+        pagination.page, 
+        pagination.limit,
+        undefined,
+        search || undefined
+      );
+      
+      if (response.status === "success") {
+        setProducts(response.data);
+        setPagination(response.pagination);
+      }
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      toast.error("Failed to load products. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const tabs = ["Semua", "Haus", "Haus Panas", "Makanan"];
-
+  // Load products when component mounts or when page/search changes
   useEffect(() => {
-    if (search) {
+    fetchProducts();
+  }, [pagination.page, search]);
+
+  // Handle search input with debounce
+  useEffect(() => {
+    if (search !== "") {
       setIsLoading(true);
       const timer = setTimeout(() => {
-        setIsLoading(false);
+        fetchProducts();
       }, 500);
       return () => clearTimeout(timer);
     }
-    setIsLoading(false);
   }, [search]);
 
-  const handleEdit = (id: string) => {
-    console.log("Edit produk dengan ID:", id);
+  // Reset form function
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      price: "",
+      description: "",
+      categoryId: "",
+      isAvailable: true,
+    });
+    setImageFile(null);
+    setImagePreview(null);
+    setEditingProductId(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  const handleDelete = (id: string) => {
-    console.log("Hapus produk dengan ID:", id);
+  // Open dialog for adding new product
+  const handleAddProduct = () => {
+    resetForm();
+    setOpenDialog(true);
+  };
+
+  // Open dialog for editing product
+  const handleEdit = (product: Product) => {
+    setEditingProductId(product.id);
+    setFormData({
+      name: product.name,
+      price: product.price.toString(),
+      description: product.description || "",
+      categoryId: product.categoryId.toString(),
+      isAvailable: product.isAvailable,
+    });
+    setImagePreview(product.imageUrl);
+    setOpenDialog(true);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle checkbox change for isAvailable
+  const handleAvailabilityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, isAvailable: e.target.checked }));
+  };
+
+  // Handle image upload
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Create FormData object for multipart/form-data
+    const submitData = new FormData();
+    submitData.append("name", formData.name);
+    submitData.append("price", formData.price);
+    submitData.append("description", formData.description);
+    submitData.append("categoryId", formData.categoryId);
+    submitData.append("isAvailable", formData.isAvailable.toString());
+    
+    // Add image file if it exists
+    if (imageFile) {
+      submitData.append("image", imageFile);
+    }
+
+    try {
+      let response;
+      
+      if (editingProductId) {
+        // Update existing product
+        response = await productsApi.updateProduct(editingProductId, submitData);
+        toast.success("Produk berhasil diperbarui");
+      } else {
+        // Create new product
+        response = await productsApi.createProduct(submitData);
+        toast.success("Produk baru berhasil ditambahkan");
+      }
+      
+      // Refresh product list and close dialog
+      fetchProducts();
+      setOpenDialog(false);
+      resetForm();
+    } catch (error) {
+      console.error("Error submitting product:", error);
+      toast.error("Gagal menyimpan produk. Silakan coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle product deletion
+  const handleDelete = async (productId: number) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+      try {
+        await productsApi.deleteProduct(productId);
+        toast.success("Produk berhasil dihapus");
+        fetchProducts();
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        toast.error("Gagal menghapus produk. Silakan coba lagi.");
+      }
+    }
+  };
+
+  // Format price to IDR
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(price);
   };
 
   return (
@@ -106,21 +283,26 @@ export default function ProdukContent() {
 
           <button
             className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Press to speak"
+            aria-label="Search"
             type="submit"
+            onClick={() => fetchProducts()}
           >
             <ArrowRightIcon size={16} strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
-        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <Dialog open={openDialog} onOpenChange={(open) => {
+          setOpenDialog(open);
+          if (!open) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button
               variant="outline"
-              className={`aspect-square max-sm:p-0 ${
+              className={`max-sm:p-0 ${
                 isDarkMode
                   ? "text-white bg-black hover:bg-white/20"
                   : "text-black bg-white hover:bg-gray-100"
               }`}
+              onClick={handleAddProduct}
             >
               <Plus
                 className="opacity-60 sm:-ms-1 sm:me-2"
@@ -142,7 +324,7 @@ export default function ProdukContent() {
                       isDarkMode ? "text-white" : "text-black"
                     }`}
                   >
-                    Tambah Produk
+                    {editingProductId ? "Edit Produk" : "Tambah Produk"}
                   </h2>
                 </DialogTitle>
                 <p
@@ -150,73 +332,138 @@ export default function ProdukContent() {
                     isDarkMode ? "text-gray-400" : "text-gray-700"
                   }`}
                 >
-                  Masukkan detail produk baru.
+                  {editingProductId ? "Edit detail produk." : "Masukkan detail produk baru."}
                 </p>
               </div>
             </div>
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label
-                  htmlFor="id"
-                  className={`${isDarkMode ? "text-white" : "text-black"}`}
-                >
-                  ID
-                </Label>
-                <Input
-                  id="id"
-                  placeholder="Masukkan ID"
-                  type="text"
-                  required
-                  className="text-muted-foreground"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="nama"
+                  htmlFor="name"
                   className={`${isDarkMode ? "text-white" : "text-black"}`}
                 >
                   Nama Produk
                 </Label>
                 <Input
-                  id="nama"
+                  id="name"
+                  name="name"
                   placeholder="Masukkan Nama Produk"
                   type="text"
                   required
+                  value={formData.name}
+                  onChange={handleInputChange}
                   className="text-muted-foreground"
                 />
               </div>
               <div className="space-y-2">
                 <Label
-                  htmlFor="kategori"
+                  htmlFor="categoryId"
                   className={`${isDarkMode ? "text-white" : "text-black"}`}
                 >
                   Kategori
                 </Label>
                 <Input
-                  id="kategori"
-                  placeholder="Masukkan Kategori"
-                  type="text"
+                  id="categoryId"
+                  name="categoryId"
+                  placeholder="ID Kategori Produk"
+                  type="number"
                   required
+                  value={formData.categoryId}
+                  onChange={handleInputChange}
                   className="text-muted-foreground"
                 />
               </div>
               <div className="space-y-2">
                 <Label
-                  htmlFor="harga"
+                  htmlFor="price"
                   className={`${isDarkMode ? "text-white" : "text-black"}`}
                 >
                   Harga
                 </Label>
                 <Input
-                  id="harga"
+                  id="price"
+                  name="price"
                   placeholder="Masukkan Harga"
-                  type="text"
+                  type="number"
                   required
+                  value={formData.price}
+                  onChange={handleInputChange}
                   className="text-muted-foreground"
                 />
               </div>
-              <Button type="submit" className="text-white w-full mt-4">
-                Submit
+              <div className="space-y-2">
+                <Label
+                  htmlFor="description"
+                  className={`${isDarkMode ? "text-white" : "text-black"}`}
+                >
+                  Deskripsi
+                </Label>
+                <textarea
+                  id="description"
+                  name="description"
+                  placeholder="Deskripsi Produk"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-md ${
+                    isDarkMode ? "bg-black text-white border-gray-700" : "bg-white text-black border-gray-300"
+                  }`}
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="image"
+                  className={`${isDarkMode ? "text-white" : "text-black"}`}
+                >
+                  Gambar
+                </Label>
+                <Input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  className="text-muted-foreground"
+                />
+                {imagePreview && (
+                  <div className="mt-2">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded" 
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isAvailable"
+                  checked={formData.isAvailable}
+                  onChange={handleAvailabilityChange}
+                  className="rounded text-primary"
+                />
+                <Label
+                  htmlFor="isAvailable"
+                  className={`${isDarkMode ? "text-white" : "text-black"}`}
+                >
+                  Produk Tersedia
+                </Label>
+              </div>
+              <Button 
+                type="submit" 
+                className="text-white w-full mt-4"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  "Simpan"
+                )}
               </Button>
             </form>
           </DialogContent>
@@ -245,29 +492,54 @@ export default function ProdukContent() {
                 <th className="p-3 text-left">Nama Produk</th>
                 <th className="p-3 text-left">Kategori</th>
                 <th className="p-3 text-left">Harga</th>
+                <th className="p-3 text-left">Status</th>
                 <th className="p-3 text-left rounded-r-lg">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {produkData
-                .filter(
-                  (produk) =>
-                    produk.nama.toLowerCase().includes(search.toLowerCase()) ||
-                    produk.id.toLowerCase().includes(search.toLowerCase()) ||
-                    produk.kategori.toLowerCase().includes(search.toLowerCase())
-                )
-                .map((produk) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="text-center p-4">
+                    <LoaderCircle className="animate-spin mx-auto" size={24} />
+                    <p className="mt-2">Loading products...</p>
+                  </td>
+                </tr>
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center p-4">
+                    No products found
+                  </td>
+                </tr>
+              ) : (
+                products.map((product) => (
                   <tr
-                    key={produk.id}
+                    key={product.id}
                     className="border-b border-gray-200 transition"
                   >
-                    <td className="p-3">{produk.id}</td>
+                    <td className="p-3">{product.id}</td>
                     <td className="p-3">
-                      <div className="w-12 h-12 bg-gray-200 rounded"></div>
+                      {product.imageUrl ? (
+                        <img 
+                          src={product.imageUrl.replace('http://localhost:80', 'http://103.210.35.189:8111')} 
+                          alt={product.name} 
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded"></div>
+                      )}
                     </td>
-                    <td className="p-3">{produk.nama}</td>
-                    <td className="p-3">{produk.kategori}</td>
-                    <td className="p-3">{produk.harga}</td>
+                    <td className="p-3">{product.name}</td>
+                    <td className="p-3">{product.category?.name || '-'}</td>
+                    <td className="p-3">{formatPrice(product.price)}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        product.isAvailable 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {product.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
+                      </span>
+                    </td>
                     <td className="p-3">
                       <div className="flex gap-2">
                         <DropdownMenu>
@@ -284,19 +556,19 @@ export default function ProdukContent() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="bg-white w-40">
                             <DropdownMenuItem
-                              className="text-black hover:bg-red-100"
-                              onClick={() => handleEdit(produk.id)}
+                              className="text-black hover:bg-blue-100"
+                              onClick={() => handleEdit(product)}
                             >
                               <BoltIcon
                                 size={16}
-                                className="opacity-60"
+                                className="opacity-60 mr-2"
                                 aria-hidden="true"
                               />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-red-600 hover:bg-red-100"
-                              onClick={() => handleDelete(produk.id)}
+                              onClick={() => handleDelete(product.id)}
                             >
                               <TrashIcon size={16} className="mr-2" />
                               Hapus Produk
@@ -306,10 +578,44 @@ export default function ProdukContent() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {pagination.pages > 1 && (
+  <div className="mt-4 flex items-center justify-between px-2">
+    <div className="flex items-center gap-2">
+      <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
+        Halaman {pagination.page} dari {pagination.pages}
+      </p>
+    </div>
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+        disabled={pagination.page === 1 || isLoading}
+        className={isDarkMode ? "text-white" : "text-black"}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span className="sr-only">Previous Page</span>
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
+        disabled={pagination.page === pagination.pages || isLoading}
+        className={isDarkMode ? "text-white" : "text-black"}
+      >
+        <ChevronRight className="h-4 w-4" />
+        <span className="sr-only">Next Page</span>
+      </Button>
+    </div>
+  </div>
+)}
       </div>
     </>
   );
