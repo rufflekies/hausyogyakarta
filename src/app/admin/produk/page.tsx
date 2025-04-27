@@ -209,7 +209,7 @@ export default function ProdukContent() {
       await productsApi.createProduct(submitData);
       toast.success("Produk baru berhasil ditambahkan");
     }
-  } catch (error) {
+  } catch {
     toast.error("Terjadi kesalahan, silakan coba lagi");
   }
 
