@@ -23,15 +23,7 @@ export default function Dashboard() {
     totalOrders: 0,
     totalCustomers: 0,
   });
-  interface Order {
-    id: string;
-    nama: string;
-    tanggal: string;
-    status: string;
-    statusClass: string;
-  }
-
-  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [recentOrders, setRecentOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch dashboard data
@@ -53,7 +45,7 @@ export default function Dashboard() {
         });
 
         // Format recent orders
-        const formattedOrders = ordersRes.data.data.map((order: { id: any; user: { name: any; }; createdAt: string | number | Date; status: string; }) => ({
+        const formattedOrders = ordersRes.data.data.map((order) => ({
           id: String(order.id).padStart(4, "0"),
           nama: order.user.name,
           tanggal: new Date(order.createdAt).toLocaleString("id-ID", {
