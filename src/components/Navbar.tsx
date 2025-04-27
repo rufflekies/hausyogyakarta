@@ -61,6 +61,9 @@ const Navbar = () => {
   // Untuk menghindari hydration mismatch
   const [mounted, setMounted] = useState(false);
 
+  // Active section state
+  const [activeSection, setActiveSection] = useState<string>("home");
+
   useEffect(() => {
     setMounted(true);
 
@@ -69,6 +72,30 @@ const Navbar = () => {
     if (token) {
       fetchUserProfile();
     }
+
+    // Scroll event listener to change active section
+    const handleScroll = () => {
+      const sections = ["home", "about", "menu", "contact"];
+      const sectionOffsets = sections.map((section) => {
+        const element = document.getElementById(section);
+        return element ? element.offsetTop : 0;
+      });
+
+      const scrollPosition = window.scrollY;
+
+      for (let i = 0; i < sectionOffsets.length; i++) {
+        if (
+          scrollPosition >= sectionOffsets[i] - 50 &&
+          scrollPosition < (sectionOffsets[i + 1] || Infinity) - 50
+        ) {
+          setActiveSection(sections[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Fetch user profile if token exists
@@ -148,33 +175,6 @@ const Navbar = () => {
     router.refresh();
   };
 
-  // Active Section Tracking
-  const [activeSection, setActiveSection] = useState("");
-
-  // Function to update active section based on scroll position
-  const handleScroll = () => {
-    const sections = ["home", "about", "menu", "contact"];
-    let currentSection = "";
-
-    sections.forEach((section) => {
-      const element = document.getElementById(section);
-      if (
-        element &&
-        element.getBoundingClientRect().top <= window.innerHeight / 2
-      ) {
-        currentSection = section;
-      }
-    });
-
-    setActiveSection(currentSection);
-  };
-
-  useEffect(() => {
-    // Set active section on scroll
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   if (!mounted) return null;
 
   const isDarkMode = resolvedTheme === "dark";
@@ -205,12 +205,14 @@ const Navbar = () => {
             )}
           </div>
 
-          <ul className="flex space-x-6">
+          <ul className="flex space-x-6 items-center">
             <li>
               <Link
                 href="#home"
-                className={`font-semibold text-lg hover:text-primary ${
-                  activeSection === "home" ? "text-primary" : ""
+                className={`font-semibold text-lg ${
+                  activeSection === "home"
+                    ? "text-primary"
+                    : "hover:text-primary"
                 }`}
               >
                 Beranda
@@ -219,8 +221,10 @@ const Navbar = () => {
             <li>
               <Link
                 href="#about"
-                className={`font-semibold text-lg hover:text-primary ${
-                  activeSection === "about" ? "text-primary" : ""
+                className={`font-semibold text-lg ${
+                  activeSection === "about"
+                    ? "text-primary"
+                    : "hover:text-primary"
                 }`}
               >
                 Tentang
@@ -229,8 +233,10 @@ const Navbar = () => {
             <li>
               <Link
                 href="#menu"
-                className={`font-semibold text-lg hover:text-primary ${
-                  activeSection === "menu" ? "text-primary" : ""
+                className={`font-semibold text-lg ${
+                  activeSection === "menu"
+                    ? "text-primary"
+                    : "hover:text-primary"
                 }`}
               >
                 Menu
@@ -239,8 +245,10 @@ const Navbar = () => {
             <li>
               <Link
                 href="#contact"
-                className={`font-semibold text-lg hover:text-primary ${
-                  activeSection === "contact" ? "text-primary" : ""
+                className={`font-semibold text-lg ${
+                  activeSection === "contact"
+                    ? "text-primary"
+                    : "hover:text-primary"
                 }`}
               >
                 Kontak
@@ -297,7 +305,9 @@ const Navbar = () => {
                         {user.role === "ADMIN" && (
                           <Button
                             onClick={() => router.push("/admin")}
-                            className="text-black w-full mb-2"
+                            className={`w-full mb-2 ${
+                              isDarkMode ? "text-white" : "text-black"
+                            }`}
                             variant="secondary"
                           >
                             Dashboard Admin
@@ -342,97 +352,102 @@ const Navbar = () => {
                       </div>
 
                       {error && (
-                        <div className="text-sm text-red-500 text-center mt-2">
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
                           {error}
                         </div>
                       )}
 
-                      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                        {authMode === "signup" && (
-                          <div>
-                            <Label htmlFor="name" className="block">
-                              Name
-                            </Label>
+                      <form className="space-y-5" onSubmit={handleSubmit}>
+                        <div className="space-y-4">
+                          {authMode === "signup" && (
+                            <div className="space-y-2">
+                              <Label htmlFor={`${id}-name`}>Username</Label>
+                              <Input
+                                id={`${id}-name`}
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="Enter your username"
+                                required
+                                className="text-muted-foreground"
+                              />
+                            </div>
+                          )}
+                          <div className="space-y-2">
+                            <Label htmlFor={`${id}-email`}>Email</Label>
                             <Input
-                              id="name"
-                              value={formData.name}
+                              id={`${id}-email`}
+                              type="email"
+                              value={formData.email}
                               onChange={handleChange}
+                              placeholder="hi@example.com"
                               required
-                              className="mt-2"
+                              className="text-muted-foreground"
                             />
                           </div>
-                        )}
-                        <div>
-                          <Label htmlFor="email" className="block">
-                            Email address
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            className="mt-2"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="password" className="block">
-                            Password
-                          </Label>
-                          <Input
-                            id="password"
-                            type="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            className="mt-2"
-                          />
-                        </div>
-                        {authMode === "signup" && (
-                          <div>
-                            <Label htmlFor="confirmPassword" className="block">
-                              Confirm Password
-                            </Label>
+                          <div className="space-y-2">
+                            <Label htmlFor={`${id}-password`}>Password</Label>
                             <Input
-                              id="confirmPassword"
+                              id={`${id}-password`}
                               type="password"
-                              value={formData.confirmPassword}
+                              value={formData.password}
                               onChange={handleChange}
+                              placeholder="Enter your password"
                               required
-                              className="mt-2"
+                              className="text-muted-foreground"
                             />
                           </div>
-                        )}
-
-                        <div>
-                          <Button
-                            type="submit"
-                            className="w-full mt-4"
-                            disabled={isLoading}
-                          >
-                            {isLoading
-                              ? "Loading..."
-                              : authMode === "signin"
-                              ? "Sign In"
-                              : "Sign Up"}
-                          </Button>
+                          {authMode === "signup" && (
+                            <div className="space-y-2">
+                              <Label htmlFor={`${id}-confirmPassword`}>
+                                Confirm Password
+                              </Label>
+                              <Input
+                                id={`${id}-confirmPassword`}
+                                type="password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                placeholder="Re-type your password"
+                                required
+                                className="text-muted-foreground"
+                              />
+                            </div>
+                          )}
                         </div>
-                      </form>
-
-                      <div className="text-center mt-4">
-                        <button
-                          onClick={() =>
-                            setAuthMode(
-                              authMode === "signin" ? "signup" : "signin"
-                            )
-                          }
-                          className="text-blue-500 text-sm"
+                        <Button
+                          type="submit"
+                          className="text-white w-full"
+                          disabled={isLoading}
                         >
-                          {authMode === "signin"
-                            ? "Don't have an account? Sign up"
-                            : "Already have an account? Sign in"}
-                        </button>
-                      </div>
+                          {isLoading
+                            ? "Processing..."
+                            : authMode === "signin"
+                            ? "Sign in"
+                            : "Sign up"}
+                        </Button>
+                      </form>
+                      <p className="text-sm text-center mt-4">
+                        {authMode === "signin" ? (
+                          <>
+                            Belum punya akun?{" "}
+                            <button
+                              onClick={() => setAuthMode("signup")}
+                              className="text-primary hover:underline"
+                            >
+                              Daftar
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            Sudah punya akun?{" "}
+                            <button
+                              onClick={() => setAuthMode("signin")}
+                              className="text-primary hover:underline"
+                            >
+                              Masuk
+                            </button>
+                          </>
+                        )}
+                      </p>
                     </>
                   )}
                 </DialogContent>

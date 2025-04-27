@@ -9,13 +9,19 @@ import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { theme } = useTheme();
+  const [isMounted, setIsMounted] = useState(false); // To prevent SSR mismatch
+
   const isDarkMode = theme === "dark";
+
+  useEffect(() => {
+    setIsMounted(true); // Set to true once the component has mounted
+  }, []);
 
   // Add states for dashboard data
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
-    totalCustomers: 0
+    totalCustomers: 0,
   });
   const [recentOrders, setRecentOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,41 +34,52 @@ export default function Dashboard() {
         const [productsRes, ordersRes, usersRes] = await Promise.all([
           productsApi.getAllProducts(1, 1),
           ordersApi.getAllOrders(1, 4), // Get only 4 recent orders
-          authApi.getAllUsers(1, 1)
+          authApi.getAllUsers(1, 1),
         ]);
 
         // Fix the stats access paths
         setStats({
           totalProducts: productsRes.pagination.total,
           totalOrders: ordersRes.data.pagination.total,
-          totalCustomers: usersRes.data.pagination.total
+          totalCustomers: usersRes.data.pagination.total,
         });
 
         // Format recent orders
-        const formattedOrders = ordersRes.data.data.map(order => ({
-          id: String(order.id).padStart(4, '0'),
+        const formattedOrders = ordersRes.data.data.map((order) => ({
+          id: String(order.id).padStart(4, "0"),
           nama: order.user.name,
-          tanggal: new Date(order.createdAt).toLocaleString('id-ID', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
+          tanggal: new Date(order.createdAt).toLocaleString("id-ID", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
           }),
-          status: order.status === 'PENDING' ? 'Proses' :
-                  order.status === 'PROCESSED' ? 'Diproses' :
-                  order.status === 'COMPLETED' ? 'Selesai' :
-                  order.status === 'CANCELLED' ? 'Dibatalkan' : 'Proses',
-          statusClass: order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      order.status === 'PROCESSED' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                      order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
+          status:
+            order.status === "PENDING"
+              ? "Proses"
+              : order.status === "PROCESSED"
+              ? "Diproses"
+              : order.status === "COMPLETED"
+              ? "Selesai"
+              : order.status === "CANCELLED"
+              ? "Dibatalkan"
+              : "Proses",
+          statusClass:
+            order.status === "PENDING"
+              ? "bg-yellow-100 text-yellow-800"
+              : order.status === "PROCESSED"
+              ? "bg-blue-100 text-blue-800"
+              : order.status === "COMPLETED"
+              ? "bg-green-100 text-green-800"
+              : order.status === "CANCELLED"
+              ? "bg-red-100 text-red-800"
+              : "bg-yellow-100 text-yellow-800",
         }));
 
         setRecentOrders(formattedOrders);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -70,6 +87,11 @@ export default function Dashboard() {
 
     fetchDashboardData();
   }, []);
+
+  // Prevent SSR issues by rendering after the component is mounted
+  if (!isMounted) {
+    return null; // You can return a loading spinner here as well
+  }
 
   return (
     <>

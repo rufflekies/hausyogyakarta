@@ -105,7 +105,7 @@ export function Overview() {
               borderRadius: "8px",
               boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
             }}
-            labelStyle={{ color: isDarkMode ? "#ffffff" : "#000000" }}
+            labelStyle={{ color: isDarkMode ? "#ffffff" : "#000000"}}
           />
           <Legend />
         </PieChart>
