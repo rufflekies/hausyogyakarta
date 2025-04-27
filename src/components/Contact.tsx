@@ -1,11 +1,21 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Phone, Mail, Instagram, MapPin } from "lucide-react";
 
 export default function Contact() {
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
+    const { theme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    // Wait for the component to mount before using the theme
+    useEffect(() => {
+      setMounted(true);
+    }, []);
+
+    if (!mounted) return null; // Render nothing until the component is mounted
+
+    const isDarkMode = theme === "dark";
 
   const locations = [
     "Haus! - Kapten Tendean",
@@ -22,7 +32,7 @@ export default function Contact() {
 
   return (
     <section
-      id="kontak"
+      id="contact"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-20"
     >
       {/* Judul */}

@@ -19,7 +19,6 @@ import { useId, useState, useEffect } from "react";
 import { authApi } from "@/lib/api"; // Import API functions
 import { useRouter } from "next/navigation"; // Import router
 
-
 const handleApiError = (err) => {
   console.error("API Error:", {
     message: err.message,
@@ -29,11 +28,13 @@ const handleApiError = (err) => {
       url: err.config?.url,
       method: err.config?.method,
       baseURL: err.config?.baseURL,
-    }
+    },
   });
-  
-  return err.response?.data?.message || 
-         "Gagal terhubung ke server. Harap coba lagi nanti.";
+
+  return (
+    err.response?.data?.message ||
+    "Gagal terhubung ke server. Harap coba lagi nanti."
+  );
 };
 
 const Navbar = () => {
@@ -49,22 +50,22 @@ const Navbar = () => {
     password: "",
     confirmPassword: "",
   });
-  
+
   // Loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   // User state
   const [user, setUser] = useState(null);
 
   // Untuk menghindari hydration mismatch
   const [mounted, setMounted] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
-    
+
     // Check if user is logged in
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       fetchUserProfile();
     }
@@ -77,15 +78,15 @@ const Navbar = () => {
       setUser(response.data);
     } catch (err) {
       console.error("Failed to fetch profile:", err);
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     }
   };
 
   // Handle input changes
   const handleChange = (e) => {
     const { id, value } = e.target;
-    const fieldName = id.split('-')[1]; // Extract field name from id
-    
+    const fieldName = id.split("-")[1]; // Extract field name from id
+
     setFormData({
       ...formData,
       [fieldName]: value,
@@ -105,32 +106,33 @@ const Navbar = () => {
           email: formData.email,
           password: formData.password,
         });
-        
+
         setUser(response.data);
-        router.refresh(); 
-        
+        router.refresh();
       } else {
         if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match");
           setIsLoading(false);
           return;
         }
-        
+
         // Register
         const response = await authApi.register({
           name: formData.name,
           email: formData.email,
           password: formData.password,
         });
-        
+
         setUser(response.data);
         router.refresh(); // Refresh page to update UI
       }
-      
+
       // Close dialog by triggering ESC key
-      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+      const event = new KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      });
       document.dispatchEvent(event);
-      
     } catch (err) {
       const errorMessage = handleApiError(err);
       setError(errorMessage);
@@ -145,6 +147,33 @@ const Navbar = () => {
     setUser(null);
     router.refresh();
   };
+
+  // Active Section Tracking
+  const [activeSection, setActiveSection] = useState("");
+
+  // Function to update active section based on scroll position
+  const handleScroll = () => {
+    const sections = ["home", "about", "menu", "contact"];
+    let currentSection = "";
+
+    sections.forEach((section) => {
+      const element = document.getElementById(section);
+      if (
+        element &&
+        element.getBoundingClientRect().top <= window.innerHeight / 2
+      ) {
+        currentSection = section;
+      }
+    });
+
+    setActiveSection(currentSection);
+  };
+
+  useEffect(() => {
+    // Set active section on scroll
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   if (!mounted) return null;
 
@@ -176,35 +205,43 @@ const Navbar = () => {
             )}
           </div>
 
-          <ul className="flex space-x-6 items-center">
+          <ul className="flex space-x-6">
             <li>
               <Link
-                href="/home"
-                className="font-semibold text-lg hover:text-primary"
+                href="#home"
+                className={`font-semibold text-lg hover:text-primary ${
+                  activeSection === "home" ? "text-primary" : ""
+                }`}
               >
                 Beranda
               </Link>
             </li>
             <li>
               <Link
-                href="/about"
-                className="font-semibold text-lg hover:text-primary"
+                href="#about"
+                className={`font-semibold text-lg hover:text-primary ${
+                  activeSection === "about" ? "text-primary" : ""
+                }`}
               >
                 Tentang
               </Link>
             </li>
             <li>
               <Link
-                href="/menu"
-                className="font-semibold text-lg hover:text-primary"
+                href="#menu"
+                className={`font-semibold text-lg hover:text-primary ${
+                  activeSection === "menu" ? "text-primary" : ""
+                }`}
               >
                 Menu
               </Link>
             </li>
             <li>
               <Link
-                href="/contact"
-                className="font-semibold text-lg hover:text-primary"
+                href="#contact"
+                className={`font-semibold text-lg hover:text-primary ${
+                  activeSection === "contact" ? "text-primary" : ""
+                }`}
               >
                 Kontak
               </Link>
@@ -245,24 +282,30 @@ const Navbar = () => {
                       </div>
                       <div className="w-full mt-4">
                         <div className="text-sm mb-4">
-                          <p><strong>Name:</strong> {user.name}</p>
-                          <p><strong>Email:</strong> {user.email}</p>
-                          <p><strong>Role:</strong> {user.role}</p>
+                          <p>
+                            <strong>Name:</strong> {user.name}
+                          </p>
+                          <p>
+                            <strong>Email:</strong> {user.email}
+                          </p>
+                          <p>
+                            <strong>Role:</strong> {user.role}
+                          </p>
                         </div>
-                        
+
                         {/* Add Admin Dashboard Button */}
-                        {user.role === 'ADMIN' && (
+                        {user.role === "ADMIN" && (
                           <Button
-                            onClick={() => router.push('/admin')}
+                            onClick={() => router.push("/admin")}
                             className="text-black w-full mb-2"
                             variant="secondary"
                           >
                             Dashboard Admin
                           </Button>
                         )}
-                        
-                        <Button 
-                          onClick={handleLogout} 
+
+                        <Button
+                          onClick={handleLogout}
                           className="text-white w-full"
                         >
                           Logout
@@ -297,105 +340,99 @@ const Navbar = () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
+                        <div className="text-sm text-red-500 text-center mt-2">
                           {error}
                         </div>
                       )}
-                      
-                      <form className="space-y-5" onSubmit={handleSubmit}>
-                        <div className="space-y-4">
-                          {authMode === "signup" && (
-                            <div className="space-y-2">
-                              <Label htmlFor={`${id}-name`}>Username</Label>
-                              <Input
-                                id={`${id}-name`}
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="Enter your username"
-                                required
-                                className="text-muted-foreground"
-                              />
-                            </div>
-                          )}
-                          <div className="space-y-2">
-                            <Label htmlFor={`${id}-email`}>Email</Label>
+
+                      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                        {authMode === "signup" && (
+                          <div>
+                            <Label htmlFor="name" className="block">
+                              Name
+                            </Label>
                             <Input
-                              id={`${id}-email`}
-                              type="email"
-                              value={formData.email}
+                              id="name"
+                              value={formData.name}
                               onChange={handleChange}
-                              placeholder="hi@example.com"
                               required
-                              className="text-muted-foreground"
+                              className="mt-2"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`${id}-password`}>Password</Label>
-                            <Input
-                              id={`${id}-password`}
-                              type="password"
-                              value={formData.password}
-                              onChange={handleChange}
-                              placeholder="Enter your password"
-                              required
-                              className="text-muted-foreground"
-                            />
-                          </div>
-                          {authMode === "signup" && (
-                            <div className="space-y-2">
-                              <Label htmlFor={`${id}-confirmPassword`}>
-                                Confirm Password
-                              </Label>
-                              <Input
-                                id={`${id}-confirmPassword`}
-                                type="password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                placeholder="Re-type your password"
-                                required
-                                className="text-muted-foreground"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <Button 
-                          type="submit" 
-                          className="text-white w-full"
-                          disabled={isLoading}
-                        >
-                          {isLoading 
-                            ? "Processing..."
-                            : authMode === "signin" 
-                              ? "Sign in" 
-                              : "Sign up"
-                          }
-                        </Button>
-                      </form>
-                      <p className="text-sm text-center mt-4">
-                        {authMode === "signin" ? (
-                          <>
-                            Belum punya akun?{" "}
-                            <button
-                              onClick={() => setAuthMode("signup")}
-                              className="text-primary hover:underline"
-                            >
-                              Daftar
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            Sudah punya akun?{" "}
-                            <button
-                              onClick={() => setAuthMode("signin")}
-                              className="text-primary hover:underline"
-                            >
-                              Masuk
-                            </button>
-                          </>
                         )}
-                      </p>
+                        <div>
+                          <Label htmlFor="email" className="block">
+                            Email address
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="password" className="block">
+                            Password
+                          </Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            className="mt-2"
+                          />
+                        </div>
+                        {authMode === "signup" && (
+                          <div>
+                            <Label htmlFor="confirmPassword" className="block">
+                              Confirm Password
+                            </Label>
+                            <Input
+                              id="confirmPassword"
+                              type="password"
+                              value={formData.confirmPassword}
+                              onChange={handleChange}
+                              required
+                              className="mt-2"
+                            />
+                          </div>
+                        )}
+
+                        <div>
+                          <Button
+                            type="submit"
+                            className="w-full mt-4"
+                            disabled={isLoading}
+                          >
+                            {isLoading
+                              ? "Loading..."
+                              : authMode === "signin"
+                              ? "Sign In"
+                              : "Sign Up"}
+                          </Button>
+                        </div>
+                      </form>
+
+                      <div className="text-center mt-4">
+                        <button
+                          onClick={() =>
+                            setAuthMode(
+                              authMode === "signin" ? "signup" : "signin"
+                            )
+                          }
+                          className="text-blue-500 text-sm"
+                        >
+                          {authMode === "signin"
+                            ? "Don't have an account? Sign up"
+                            : "Already have an account? Sign in"}
+                        </button>
+                      </div>
                     </>
                   )}
                 </DialogContent>

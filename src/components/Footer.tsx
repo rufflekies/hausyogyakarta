@@ -1,12 +1,21 @@
 "use client";
 import { Instagram, MessageCircle, Music2 } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 
 export default function Footer() {
   const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
+  const [mounted, setMounted] = useState(false);
 
+  // Wait for the component to mount before using the theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null; // Render nothing until the component is mounted
+
+  const isDarkMode = theme === "dark";
   return (
     <footer
       className={`py-12 px-6 text-base ${

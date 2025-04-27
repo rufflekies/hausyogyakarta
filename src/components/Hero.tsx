@@ -3,7 +3,7 @@
 export default function Hero() {
   return (
     <section
-      id="beranda"
+      id="home"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between py-12"
     >
       {/* Kiri - Text */}
