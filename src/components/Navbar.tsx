@@ -18,8 +18,9 @@ import { Label } from "@/components/ui/label";
 import { useId, useState, useEffect } from "react";
 import { authApi } from "@/lib/api"; // Import API functions
 import { useRouter } from "next/navigation"; // Import router
+import { AxiosError } from "axios";
 
-const handleApiError = (err) => {
+const handleApiError = (err: AxiosError) => {
   console.error("API Error:", {
     message: err.message,
     status: err.response?.status,
@@ -32,7 +33,7 @@ const handleApiError = (err) => {
   });
 
   return (
-    err.response?.data?.message ||
+    (err.response?.data as { message?: string })?.message ||
     "Gagal terhubung ke server. Harap coba lagi nanti."
   );
 };
@@ -56,7 +57,13 @@ const Navbar = () => {
   const [error, setError] = useState("");
 
   // User state
-  const [user, setUser] = useState(null);
+  interface User {
+    name: string;
+    email: string;
+    role: string;
+  }
+
+  const [user, setUser] = useState<User | null>(null);
 
   // Untuk menghindari hydration mismatch
   const [mounted, setMounted] = useState(false);
@@ -110,7 +117,7 @@ const Navbar = () => {
   };
 
   // Handle input changes
-  const handleChange = (e) => {
+  function handleChange(e: { target: { id: any; value: any; }; }) {
     const { id, value } = e.target;
     const fieldName = id.split("-")[1]; // Extract field name from id
 
@@ -118,10 +125,10 @@ const Navbar = () => {
       ...formData,
       [fieldName]: value,
     });
-  };
+  }
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
@@ -161,7 +168,7 @@ const Navbar = () => {
       });
       document.dispatchEvent(event);
     } catch (err) {
-      const errorMessage = handleApiError(err);
+      const errorMessage = handleApiError(err as AxiosError);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
