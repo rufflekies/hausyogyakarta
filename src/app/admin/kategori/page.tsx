@@ -256,11 +256,8 @@ export default function KategoriContent() {
               <Button
                 type="submit"
                 className="text-white w-full mt-4"
-                disabled={isLoading}
+                
               >
-                {isLoading ? (
-                  <LoaderCircle className="animate-spin mr-2" size={16} />
-                ) : null}
                 Submit
               </Button>
             </form>
