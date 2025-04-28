@@ -72,7 +72,8 @@ const MenuFull = () => {
 
   useEffect(() => {
     // Check if user is logged in
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     setIsLoggedIn(!!token);
   }, []);
 
@@ -110,7 +111,10 @@ const MenuFull = () => {
               if (product.image) {
                 try {
                   // Attempt to create a valid URL
-                  const imageUrl = new URL(product.image, process.env.NEXT_PUBLIC_API_URL);
+                  const imageUrl = new URL(
+                    product.image,
+                    process.env.NEXT_PUBLIC_API_URL
+                  );
                   productImage = imageUrl.toString();
                 } catch (error) {
                   // If URL construction fails, fall back to the placeholder
@@ -141,7 +145,7 @@ const MenuFull = () => {
         }
 
         setMenuSections(sections);
-      } catch  {
+      } catch {
         setError("Gagal memuat data menu. Coba lagi nanti.");
         toast.error("Error Memuat Menu", {
           description: "Gagal memuat data menu. Silakan coba lagi nanti.",
@@ -153,7 +157,7 @@ const MenuFull = () => {
 
     fetchData();
   }, []);
-  
+
   const handleAddToCart = (item: MenuItem) => {
     if (!isLoggedIn) {
       toast.error("Login Required", {
@@ -256,26 +260,25 @@ const MenuFull = () => {
           >
             {section.title}
           </h2>
-          <div className="flex flex-wrap gap-6 justify-center">
+          <div className="flex flex-wrap justify-center gap-6">
             {section.items.map((item) => (
               <div
                 key={item.id}
-                className={`rounded-xl shadow-md overflow-hidden flex flex-col items-center p-6 w-fit relative ${
+                className={`relative rounded-xl shadow-md overflow-hidden flex flex-col items-center p-6 w-64 ${
                   isDarkMode ? "bg-black" : "bg-white"
                 }`}
               >
-                <Image
+                <img
                   src={item.image}
                   alt={item.name}
-                  width={192} // Set image width
-                  height={192} // Set image height
-                  className="object-contain rounded-md"
+                  className="w-48 h-48 object-contain rounded-md mb-4"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    target.src = "/placeholder.png"; // Use placeholder if error occurs
+                    target.src = "/placeholder.png";
                   }}
                 />
+
                 <h3
                   className={`text-xl font-semibold text-center ${
                     isDarkMode ? "text-white" : "text-black"
@@ -283,6 +286,7 @@ const MenuFull = () => {
                 >
                   {item.name}
                 </h3>
+
                 <span
                   className={`text-sm text-gray-500 whitespace-pre-line text-center mb-2 ${
                     isDarkMode ? "text-white" : "text-black"
@@ -295,21 +299,23 @@ const MenuFull = () => {
                     </div>
                   ))}
                 </span>
+
                 <span
-                  className={`font-bold text-primary ${
+                  className={`font-bold text-primary mb-4 ${
                     isDarkMode ? "text-white" : "text-black"
                   }`}
                 >
                   {item.price}
                 </span>
 
+                {/* Button Pesan */}
                 <div className="absolute bottom-0 flex justify-end w-full">
-                  <button
+                  <Button
                     onClick={() => handleAddToCart(item)}
-                    className="bg-primary p-3 rounded-tl-2xl text-white text-2xl flex"
+                    className="bg-primary p-3 rounded-tl-2xl text-white h-full text-2xl flex"
                   >
                     <MdShoppingCart />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -342,8 +348,8 @@ const MenuFull = () => {
                 <Image
                   src={selectedItem.image || "/placeholder.png"}
                   alt={selectedItem.name}
-                  width={256}
-                  height={256}
+                  width={144}
+                  height={144}
                   className="object-contain rounded-md mx-auto"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
