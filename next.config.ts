@@ -36,7 +36,7 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ["103.210.35.189"], // Allow images from this IP address
+    domains: ["103.210.35.189:8111"], // Allow images from this IP address
   },
 };
 
