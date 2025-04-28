@@ -106,13 +106,15 @@ export default function PelangganContent() {
 
     // Add these handler functions
     const handleDetail = (userId: number) => {
-      const user = users.find((u: User) => u.id === userId.toString());
+      console.log("Tombol Detail Ditekan untuk User ID:", userId); // Tambahkan log
+      const user = users.find((u: User) => u.id === userId);
       if (user) {
+        console.log("User ditemukan:", user); // Tambahkan log untuk memastikan data ditemukan
         setSelectedUser(user);
+        setOpenDetailDialog(true); // Membuka dialog
       } else {
-        setSelectedUser(null);
+        console.log("User tidak ditemukan"); // Tambahkan log jika user tidak ditemukan
       }
-      setOpenDetailDialog(true);
     };
 
   const filteredData = users.filter(

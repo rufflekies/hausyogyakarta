@@ -36,7 +36,7 @@ interface OrderItem {
 interface Order {
   id: number;
   userId: number;
-  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
   total: number;
   address: string;
   createdAt: string;
@@ -67,7 +67,7 @@ export default function PesananContent() {
     try {
       setIsLoading(true);
       await ordersApi.updateOrderStatus(id, {
-        status: newStatus as 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
+        status: newStatus as 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED'
       });
       toast.success("Status pesanan berhasil diubah");
       fetchOrders(); // Refresh the orders list
@@ -84,7 +84,7 @@ export default function PesananContent() {
       const status = order.status;
       switch (activeTab) {
         case "Proses": return status === "PROCESSING" || status === "PENDING";
-        case "Selesai": return status === "DELIVERED";
+        case "Selesai": return status === "COMPLETED";
         case "Dibatalkan": return status === "CANCELLED";
         default: return true;
       }
@@ -178,16 +178,16 @@ export default function PesananContent() {
                 key={order.id}
                 className="border-b border-gray-200 dark:border-zinc-700 transition"
               >
-                <td className="p-3">{String(order.id).padStart(4, '0')}</td>
+                <td className="p-3">{String(order.id).padStart(4, "0")}</td>
                 <td className="p-3">{order.user.name}</td>
                 <td className="p-3">Rp{order.total.toLocaleString()}</td>
                 <td className="p-3">
-                  {new Date(order.createdAt).toLocaleDateString('id-ID', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                  {new Date(order.createdAt).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </td>
                 <td className="p-3">
@@ -200,32 +200,40 @@ export default function PesananContent() {
                             : "bg-white text-black hover:bg-gray-100 border-white"
                         }`}
                       >
-                        {order.status === 'PROCESSING' ? 'Proses' : 
-                         order.status === 'DELIVERED' ? 'Selesai' :
-                         order.status === 'CANCELLED' ? 'Dibatalkan' : 
-                         order.status}
+                        {order.status === "PROCESSING"
+                          ? "Proses"
+                          : order.status === "COMPLETED"
+                          ? "Selesai"
+                          : order.status === "CANCELLED"
+                          ? "Dibatalkan"
+                          : order.status}
                         <ChevronDown size={16} />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       className={`w-40 ${isDarkMode ? "bg-black" : "bg-white"}`}
                     >
-                      {["PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"].map((status) => (
-                        <DropdownMenuItem
-                          key={status}
-                          onClick={() => handleStatusChange(order.id, status)}
-                          className={`${
-                            isDarkMode
-                              ? "text-white hover:bg-zinc-700"
-                              : "text-black hover:bg-gray-100"
-                          }`}
-                        >
-                          {status === 'PROCESSING' ? 'Proses' :
-                           status === 'COMPLETED' ? 'Selesai' :
-                           status === 'CANCELLED' ? 'Dibatalkan' : 
-                           status}
-                        </DropdownMenuItem>
-                      ))}
+                      {["PROCESSING", "COMPLETED", "CANCELLED"].map(
+                        (status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() => handleStatusChange(order.id, status)}
+                            className={`${
+                              isDarkMode
+                                ? "text-white hover:bg-zinc-700"
+                                : "text-black hover:bg-gray-100"
+                            }`}
+                          >
+                            {status === "PROCESSING"
+                              ? "Proses"
+                              : status === "COMPLETED"
+                              ? "Selesai"
+                              : status === "CANCELLED"
+                              ? "Dibatalkan"
+                              : status}
+                          </DropdownMenuItem>
+                        )
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </td>
@@ -240,35 +248,37 @@ export default function PesananContent() {
             )}
           </tbody>
         </table>
-      </div>
 
-      <div className="mt-4 flex items-center justify-between px-2">
-        <div className="flex items-center gap-2">
-          <p className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}>
-            Halaman {page} dari {totalPages}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1 || isLoading}
-            className={isDarkMode ? "text-white" : "text-black"}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Previous Page</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages || isLoading}
-            className={isDarkMode ? "text-white" : "text-black"}
-          >
-            <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Next Page</span>
-          </Button>
+        <div className="mt-4 flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <p
+              className={`text-sm ${isDarkMode ? "text-white" : "text-black"}`}
+            >
+              Halaman {page} dari {totalPages}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || isLoading}
+              className={isDarkMode ? "text-white" : "text-black"}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Previous Page</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || isLoading}
+              className={isDarkMode ? "text-white" : "text-black"}
+            >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Next Page</span>
+            </Button>
+          </div>
         </div>
       </div>
     </>
